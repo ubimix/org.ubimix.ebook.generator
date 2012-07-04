@@ -22,6 +22,16 @@
             <version>0.9.0</version>
         </dependency>
         <dependency>
+            <groupId>org.webreformatter.commons</groupId>
+            <artifactId>org.webreformatter.commons.templates</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webreformatter.commons</groupId>
+            <artifactId>org.webreformatter.commons.templates.velocity</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.webreformatter.ebook</groupId>
             <artifactId>org.webreformatter.ebook</artifactId>
             <version>0.9.0</version>

@@ -1,11 +1,13 @@
 package org.webreformatter.ebook.remote.apps.xwikiepub;
 
+import java.io.File;
 import java.io.IOException;
 
+import org.webreformatter.commons.templates.ITemplateProcessor;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.ebook.remote.AbstractSite;
 import org.webreformatter.ebook.remote.formatters.IFormatterFactory;
-import org.webreformatter.ebook.remote.formatters.MinisiteFormatterFactory;
+import org.webreformatter.ebook.remote.formatters.TemplateBasedFormatterFactory;
 import org.webreformatter.ebook.remote.presenter.IPresenterManager;
 import org.webreformatter.ebook.remote.presenter.PresenterManager;
 import org.webreformatter.ebook.remote.scrappers.IScrapperFactory;
@@ -16,25 +18,32 @@ import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiScrapperFactory;
  */
 public class XWikiSite extends AbstractSite {
 
-    private Uri fResourceBaseUri;
+    private File fResources;
 
     private Uri fSitePrefix;
 
-    public XWikiSite(final Uri sitePrefix, Uri siteIndexUri, Uri resourceBaseUri)
-        throws IOException {
+    private ITemplateProcessor fTemplateProcessor;
+
+    public XWikiSite(
+        final Uri sitePrefix,
+        Uri siteIndexUri,
+        ITemplateProcessor templateProcessor,
+        File resources) throws IOException {
         super(siteIndexUri);
-        fResourceBaseUri = resourceBaseUri;
+        fTemplateProcessor = templateProcessor;
+        fResources = resources;
         fSitePrefix = sitePrefix;
     }
 
     @Override
     protected IFormatterFactory newFormatterFactory() {
-        return new MinisiteFormatterFactory(fResourceBaseUri);
+        return new TemplateBasedFormatterFactory(fTemplateProcessor, fResources);
     }
 
     @Override
     protected IPresenterManager newPresenterManager() throws IOException {
-        return new PresenterManager(this, fResourceBaseUri);
+        Uri localBaseUri = new Uri(fResources.toURI() + "");
+        return new PresenterManager(this, localBaseUri);
     }
 
     @Override
