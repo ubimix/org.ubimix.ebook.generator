@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
@@ -131,10 +132,6 @@ public class RemoteResourceLoader implements IRemoteResourceLoader {
 
     private XmlContext fXmlContext;
 
-    public RemoteResourceLoader() throws IOException {
-        this(AppContextConfigurator.createAppContext());
-    }
-
     public RemoteResourceLoader(AppContext appContext) {
         this(appContext, newXmlContext());
     }
@@ -142,6 +139,11 @@ public class RemoteResourceLoader implements IRemoteResourceLoader {
     public RemoteResourceLoader(AppContext appContext, XmlContext xmlContext) {
         fContext = appContext;
         fXmlContext = xmlContext;
+    }
+
+    public RemoteResourceLoader(IVariableProvider propertyProvider)
+        throws IOException {
+        this(AppContextConfigurator.createAppContext(propertyProvider));
     }
 
     public RemoteResourceLoader.PersistentResource download(Uri indexUri)

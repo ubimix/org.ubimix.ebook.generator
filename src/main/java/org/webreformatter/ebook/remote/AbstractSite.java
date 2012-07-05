@@ -22,8 +22,12 @@ public abstract class AbstractSite implements ISite {
 
     private Uri fSiteUrl;
 
+    public AbstractSite() {
+        this(null);
+    }
+
     public AbstractSite(Uri siteUri) {
-        fSiteUrl = siteUri;
+        init(siteUri);
     }
 
     @Override
@@ -61,6 +65,10 @@ public abstract class AbstractSite implements ISite {
     @Override
     public Uri getSiteUrl() {
         return fSiteUrl;
+    }
+
+    protected void init(Uri siteUri) {
+        fSiteUrl = siteUri;
     }
 
     protected abstract IFormatterFactory newFormatterFactory()

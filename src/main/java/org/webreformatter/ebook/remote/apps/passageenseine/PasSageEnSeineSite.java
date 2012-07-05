@@ -11,6 +11,7 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.webreformatter.commons.json.ext.DateFormatter;
 import org.webreformatter.commons.json.ext.FormattedDate;
+import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XHTMLUtils;
 import org.webreformatter.commons.xml.XmlAcceptor;
@@ -18,16 +19,10 @@ import org.webreformatter.commons.xml.XmlAcceptor.XmlVisitor;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
-import org.webreformatter.ebook.remote.AbstractSite;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader;
-import org.webreformatter.ebook.remote.RemoteResourceLoader;
-import org.webreformatter.ebook.remote.formatters.IFormatterFactory;
-import org.webreformatter.ebook.remote.formatters.MinisiteFormatterFactory;
+import org.webreformatter.ebook.remote.AbstractConfiguredSite;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
-import org.webreformatter.ebook.remote.presenter.IPresenterManager;
 import org.webreformatter.ebook.remote.presenter.IndexPagePresenter.IIndexPageScrapper;
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
-import org.webreformatter.ebook.remote.presenter.PresenterManager;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
 import org.webreformatter.ebook.remote.presenter.RemoteResourcePresenter;
@@ -41,7 +36,7 @@ import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper
 /**
  * @author kotelnikov
  */
-public class PasSageEnSeineSite extends AbstractSite {
+public class PasSageEnSeineSite extends AbstractConfiguredSite {
 
     /**
      * @author kotelnikov
@@ -299,37 +294,24 @@ public class PasSageEnSeineSite extends AbstractSite {
 
     private static final String XWIKI_URL_BASE = "https://beebapp.ubimix.com/xwiki/bin/view/";
 
-    private Uri fResourceBaseUri;
+    private String fSitePrefixStr;
 
-    private IUrlProvider fUrlProvider;
-
-    public PasSageEnSeineSite(String indexPageName, String resourceBaseUri)
+    public PasSageEnSeineSite(IVariableProvider propertyProvider)
         throws IOException {
-        super(new Uri(XWIKI_URL_BASE + indexPageName));
-        fResourceBaseUri = new Uri(resourceBaseUri);
-        fUrlProvider = new CirclesUrlProvider(
-            Arrays.<String> asList(XWIKI_URL_BASE),
-            Arrays.<String> asList(OWNI_URL_BASE));
-    }
-
-    @Override
-    protected IFormatterFactory newFormatterFactory() {
-        return new MinisiteFormatterFactory(fResourceBaseUri);
-    }
-
-    @Override
-    protected IPresenterManager newPresenterManager() throws IOException {
-        return new PresenterManager(this, fUrlProvider, fResourceBaseUri);
-    }
-
-    @Override
-    protected IRemoteResourceLoader newResourceLoader() throws IOException {
-        return new RemoteResourceLoader();
+        super(propertyProvider);
+        fSitePrefixStr = propertyProvider.getValue("siteBaseUrl");
     }
 
     @Override
     protected IScrapperFactory newScrapperFactory() {
         return new PasSageEnSeineScrapperFactory();
+    }
+
+    @Override
+    protected IUrlProvider newUrlProvider() {
+        return new CirclesUrlProvider(
+            Arrays.<String> asList(XWIKI_URL_BASE),
+            Arrays.<String> asList(OWNI_URL_BASE));
     }
 
 }

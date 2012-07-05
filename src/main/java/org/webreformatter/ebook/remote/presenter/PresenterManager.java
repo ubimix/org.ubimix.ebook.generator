@@ -12,9 +12,8 @@ import java.util.logging.Logger;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader;
-import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.apps.xwikiepub.XWikiSite;
+import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
 
@@ -23,7 +22,7 @@ import org.webreformatter.scrapper.protocol.HttpStatusCode;
  */
 public class PresenterManager implements IPresenterManager {
 
-    private final static Logger log = Logger.getLogger(XWikiSite.class
+    private final static Logger log = Logger.getLogger(PresenterManager.class
         .getName());
 
     private Map<Uri, IPresenter> fPresenters = new HashMap<Uri, IPresenter>();

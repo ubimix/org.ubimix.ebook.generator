@@ -70,7 +70,7 @@
                                             <directory>../../workdir</directory>
                                             <includes>
                                                 <include>config/**</include>
-                                                <include>template/**</include>
+                                                <include>templates/**</include>
                                             </includes>
                                             <excludes>
                                                 <exclude>config/access.json</exclude>

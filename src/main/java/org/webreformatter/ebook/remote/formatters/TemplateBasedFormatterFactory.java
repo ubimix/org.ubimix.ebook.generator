@@ -98,7 +98,7 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
                 }
             }
             if (templateName == null) {
-                templateName = "default.vm";
+                templateName = "main.vm";
             }
             return templateName;
         }
@@ -148,6 +148,7 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
         fResourceFolder = resources;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <F extends IFormatter, P extends IContentPresenter> F getFormatter(
         P presenter,
