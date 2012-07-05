@@ -12,10 +12,8 @@ scrapper() {
 }
 
 books() {
-        cd ${dir}/../../../webreformatter.books/projects
-        mvn clean install
-        cd ${dir}/../../../webreformatter.books/projects/org.webreformatter.books.generator
-        mvn process-resources
+        cd ${dir}/../../../webreformatter.ebooks/projects
+        mvn clean install -P cli
 }
 
 list=$@
