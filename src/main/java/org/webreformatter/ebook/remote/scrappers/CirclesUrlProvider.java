@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.webreformatter.commons.uri.Uri;
-import org.webreformatter.ebook.remote.scrappers.PageScrapper.UrlProvider;
+import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.UrlProvider;
 
 /**
  * @author kotelnikov

@@ -17,7 +17,7 @@ import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.ebook.remote.RemoteResourceLoader;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.PersistentResource;
 import org.webreformatter.scrapper.core.AppContext;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
 
@@ -51,7 +51,7 @@ public class EPubGeneratorServlet extends HttpServlet {
 
         RemoteResourceLoader reader = new RemoteResourceLoader(fContext);
         Uri uri = new Uri(indexUrl);
-        RemoteResource r = reader.download(uri);
+        PersistentResource r = reader.download(uri);
         HttpStatusCode status = r.getStatus();
         if (status.isOkOrNotModified()) {
             String mimeType = r.getMimeType();

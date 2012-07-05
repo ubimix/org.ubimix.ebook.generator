@@ -9,15 +9,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader;
 import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.RemoteResourceLoader;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.apps.xwikiepub.XWikiSite;
-import org.webreformatter.scrapper.core.AppContext;
-import org.webreformatter.scrapper.core.AppContextConfigurator;
+import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
 
 /**
@@ -32,23 +30,19 @@ public class PresenterManager implements IPresenterManager {
 
     private List<Uri> fPresentersUrls = new ArrayList<Uri>();
 
-    private RemoteResourceLoader fReader;
-
     protected Uri fResourceBaseUrl;
 
     private ISite fSite;
 
-    public PresenterManager(ISite site, Uri localResources) throws IOException {
+    private IUrlProvider fUrlProvider;
+
+    public PresenterManager(
+        ISite site,
+        IUrlProvider urlProvider,
+        Uri localResources) throws IOException {
         fSite = site;
+        fUrlProvider = urlProvider;
         fResourceBaseUrl = localResources;
-        AppContext appContext = AppContextConfigurator
-            .createAppContext(new IVariableProvider() {
-                @Override
-                public String getValue(String name) {
-                    return System.getProperty(name);
-                }
-            });
-        fReader = new RemoteResourceLoader(appContext);
     }
 
     private void addPresenter(Uri resourceUri, IPresenter presenter) {
@@ -66,7 +60,10 @@ public class PresenterManager implements IPresenterManager {
         resourceUri = RemoteResourcePresenter.removeFragment(resourceUri);
         IPresenter presenter = getResourcePresenter(resourceUri);
         if (presenter == null && create) {
-            RemoteResource resource = fReader.getResource(resourceUri, true);
+            IRemoteResourceLoader resourceLoader = fSite.getResourceLoader();
+            RemoteResource resource = resourceLoader.getResource(
+                resourceUri,
+                true);
             HttpStatusCode status = resource.download(shouldReload());
             if (status.isOkOrNotModified()) {
                 presenter = newPresenter(resource);
@@ -138,9 +135,15 @@ public class PresenterManager implements IPresenterManager {
         } else if (resource.isHtmlPage()) {
             Uri siteUrl = fSite.getSiteUrl();
             if (siteUrl.equals(resourceUri)) {
-                presenter = new IndexPagePresenter(fSite, resource);
+                presenter = new IndexPagePresenter(
+                    fSite,
+                    resource,
+                    fUrlProvider);
             } else {
-                presenter = new InnerPagePresenter(fSite, resource);
+                presenter = new InnerPagePresenter(
+                    fSite,
+                    resource,
+                    fUrlProvider);
             }
         } else if (resource.isImage()) {
             presenter = new ImagePresenter(fSite, resource);

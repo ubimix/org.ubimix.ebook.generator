@@ -21,7 +21,7 @@ import org.webreformatter.ebook.bom.json.JsonBookMeta;
 import org.webreformatter.ebook.bom.json.JsonBookToc;
 import org.webreformatter.ebook.bom.json.JsonBookToc.JsonBookTocItem;
 import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 
 /**
@@ -34,9 +34,9 @@ public class IndexPagePresenter extends RemotePagePresenter {
      */
     public interface IIndexPageScrapper extends IScrapper {
 
-        XmlWrapper getTitleElement() throws XmlException;
+        XmlWrapper getTitleElement() throws XmlException, IOException;
 
-        XmlWrapper getTocList() throws XmlException;
+        XmlWrapper getTocList() throws XmlException, IOException;
     }
 
     private final static Logger log = Logger.getLogger(IndexPagePresenter.class
@@ -46,17 +46,18 @@ public class IndexPagePresenter extends RemotePagePresenter {
 
     private JsonBookToc fBookToc;
 
-    private IIndexPageScrapper fFieldAccessor;
-
     private Set<Uri> fReferences;
+
+    private IIndexPageScrapper fScrapper;
 
     private XmlWrapper fTocElement;
 
     public IndexPagePresenter(
         ISite site,
-        RemoteResource resource) throws IOException, XmlException {
-        super(site, resource);
-        fFieldAccessor = newScrapper(this, IIndexPageScrapper.class);
+        RemoteResource resource,
+        IUrlProvider urlProvider) throws IOException, XmlException {
+        super(site, resource, urlProvider);
+        fScrapper = newScrapper(this, IIndexPageScrapper.class);
     }
 
     private void addTocItemFields(JsonBookTocItem tocItem, XmlWrapper item)
@@ -89,10 +90,11 @@ public class IndexPagePresenter extends RemotePagePresenter {
      * 
      * @return the top TOC element
      * @throws XmlException
+     * @throws IOException
      */
-    private XmlWrapper checkTocElement() throws XmlException {
+    private XmlWrapper checkTocElement() throws XmlException, IOException {
         if (fTocElement == null) {
-            fTocElement = fFieldAccessor.getTocList();
+            fTocElement = fScrapper.getTocList();
             fReferences = new LinkedHashSet<Uri>();
             if (fTocElement != null) {
                 List<XmlWrapper> ancors = fTocElement
@@ -113,7 +115,7 @@ public class IndexPagePresenter extends RemotePagePresenter {
         return fTocElement;
     }
 
-    public JsonBookMeta getBookMeta() throws XmlException {
+    public JsonBookMeta getBookMeta() throws XmlException, IOException {
         if (fBookMeta == null) {
             fBookMeta = readBookMetadata();
         }
@@ -181,9 +183,9 @@ public class IndexPagePresenter extends RemotePagePresenter {
         throw new RuntimeException(msg, t);
     }
 
-    private JsonBookMeta readBookMetadata() throws XmlException {
+    private JsonBookMeta readBookMetadata() throws XmlException, IOException {
         JsonBookMeta meta = new JsonBookMeta();
-        XmlWrapper e = fFieldAccessor.getTitleElement();
+        XmlWrapper e = fScrapper.getTitleElement();
         String title = e != null ? e.toText().trim() : null;
         if (title == null) {
             Uri pageUrl = getResourceUrl();

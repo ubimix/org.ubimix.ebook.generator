@@ -3,6 +3,8 @@
  */
 package org.webreformatter.ebook.remote.scrappers.mediawiki;
 
+import java.io.IOException;
+
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
@@ -16,20 +18,18 @@ public class WikipediaPageScrapper extends PageScrapper
     implements
     IInnerPageScrapper {
 
-    public WikipediaPageScrapper(
-        IUrlProvider urlProvider,
-        RemotePagePresenter presenter) {
-        super(urlProvider, presenter);
+    public WikipediaPageScrapper(RemotePagePresenter presenter) {
+        super(presenter);
     }
 
     @Override
-    public XmlWrapper getContent() throws XmlException {
+    public XmlWrapper getContent() throws XmlException, IOException {
         XmlWrapper page = getPage();
         return page.eval("//html:div[@id='bodyContent']");
     }
 
     @Override
-    public String getTitle() throws XmlException {
+    public String getTitle() throws XmlException, IOException {
         XmlWrapper page = getPage();
         return page
             .evalStr("//html:h1[@id='firstHeading']/html:span[@dir='auto']");

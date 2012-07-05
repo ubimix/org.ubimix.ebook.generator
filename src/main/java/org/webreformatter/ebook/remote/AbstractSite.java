@@ -16,6 +16,8 @@ public abstract class AbstractSite implements ISite {
 
     private IPresenterManager fPresenterManager;
 
+    private IRemoteResourceLoader fResourceLoader;
+
     private IScrapperFactory fScrapperFactory;
 
     private Uri fSiteUrl;
@@ -41,6 +43,14 @@ public abstract class AbstractSite implements ISite {
     }
 
     @Override
+    public IRemoteResourceLoader getResourceLoader() throws IOException {
+        if (fResourceLoader == null) {
+            fResourceLoader = newResourceLoader();
+        }
+        return fResourceLoader;
+    }
+
+    @Override
     public IScrapperFactory getScrapperFactory() throws IOException {
         if (fScrapperFactory == null) {
             fScrapperFactory = newScrapperFactory();
@@ -57,6 +67,9 @@ public abstract class AbstractSite implements ISite {
         throws IOException;
 
     protected abstract IPresenterManager newPresenterManager()
+        throws IOException;
+
+    protected abstract IRemoteResourceLoader newResourceLoader()
         throws IOException;
 
     protected abstract IScrapperFactory newScrapperFactory() throws IOException;

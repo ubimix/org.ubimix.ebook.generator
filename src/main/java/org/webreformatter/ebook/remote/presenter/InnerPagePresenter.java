@@ -4,6 +4,7 @@
 package org.webreformatter.ebook.remote.presenter;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,7 @@ import org.webreformatter.commons.xml.html.HtmlBurner.HtmlBurnerConfig;
 import org.webreformatter.commons.xml.html.TagDictionary;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
 import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.formatters.IFormatter;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 
@@ -44,15 +45,11 @@ public class InnerPagePresenter extends RemotePagePresenter
      */
     public interface IInnerPageScrapper extends IScrapper {
 
-        XmlWrapper getContent() throws XmlException;
+        XmlWrapper getContent() throws XmlException, IOException;
 
-        Set<Uri> getContentImages() throws XmlException;
+        Map<String, Object> getProperties() throws XmlException, IOException;
 
-        Set<Uri> getContentReferences() throws XmlException;
-
-        Map<String, Object> getProperties() throws XmlException;
-
-        String getTitle() throws XmlException;
+        String getTitle() throws XmlException, IOException;
 
     }
 
@@ -60,10 +57,11 @@ public class InnerPagePresenter extends RemotePagePresenter
 
     private IInnerPageScrapper fFieldAccessor;
 
-    public InnerPagePresenter(ISite site, RemoteResource resource)
-        throws IOException,
-        XmlException {
-        super(site, resource);
+    public InnerPagePresenter(
+        ISite site,
+        RemoteResource resource,
+        IUrlProvider urlProvider) throws IOException, XmlException {
+        super(site, resource, urlProvider);
         fFieldAccessor = newScrapper(this, IInnerPageScrapper.class);
     }
 
@@ -170,7 +168,9 @@ public class InnerPagePresenter extends RemotePagePresenter
         return buf.toString();
     }
 
-    private XmlWrapper getExtractedContentElement() throws XmlException {
+    private XmlWrapper getExtractedContentElement()
+        throws XmlException,
+        IOException {
         if (fContentXml == null) {
             fContentXml = fFieldAccessor.getContent();
         }
@@ -184,18 +184,35 @@ public class InnerPagePresenter extends RemotePagePresenter
 
     @Override
     public Set<Uri> getImageReferences() throws XmlException, IOException {
-        getExtractedContentElement();
-        return fFieldAccessor.getContentImages();
+        XmlWrapper content = getExtractedContentElement();
+        return getReferences(content, ".//html:img", "src");
     }
 
     @Override
     public Set<Uri> getPageReferences() throws XmlException, IOException {
-        getExtractedContentElement();
-        return fFieldAccessor.getContentReferences();
+        XmlWrapper content = getExtractedContentElement();
+        return getReferences(content, ".//html:a[@href]", "href");
     }
 
-    public String getPageTitle() throws XmlException {
+    public String getPageTitle() throws XmlException, IOException {
         return fFieldAccessor.getTitle();
+    }
+
+    protected Set<Uri> getReferences(XmlWrapper xml, String xpath, String param)
+        throws XmlException {
+        Set<Uri> result = new LinkedHashSet<Uri>();
+        if (xml != null) {
+            List<XmlWrapper> references = xml.evalList(xpath);
+            for (XmlWrapper reference : references) {
+                String excluded = reference.getAttribute("_excluded");
+                if (!"true".equals(excluded)) {
+                    String ref = reference.getAttribute(param);
+                    Uri uri = new Uri(ref);
+                    result.add(uri);
+                }
+            }
+        }
+        return result;
     }
 
     public JsonBookSection getSection() throws XmlException, IOException {
@@ -218,45 +235,6 @@ public class InnerPagePresenter extends RemotePagePresenter
         }
 
         return section;
-    }
-
-    protected String localizeReference(Uri pagePath, String ref) {
-        try {
-            Uri uri = new Uri(ref);
-            IPresenter presenter = getPresenter(uri, false);
-            if (presenter instanceof IContentPresenter) {
-                Uri resourcePath = ((IContentPresenter) presenter)
-                    .getResourcePath();
-                resourcePath = pagePath.getRelative(resourcePath);
-                ref = resourcePath.toString();
-            } else {
-                ref = null;
-            }
-            return ref;
-        } catch (Throwable t) {
-            throw onError(
-                RuntimeException.class,
-                "Can not localizer reference. Ref: '"
-                    + ref
-                    + "'. Page: '"
-                    + pagePath
-                    + "'.",
-                t);
-        }
-    }
-
-    private void localizeReferences(XmlWrapper xml, String xpath, String param)
-        throws XmlException,
-        IOException {
-        Uri pagePath = getResourcePath();
-        List<XmlWrapper> references = xml.evalList(xpath);
-        for (XmlWrapper reference : references) {
-            String ref = reference.getAttribute(param);
-            ref = localizeReference(pagePath, ref);
-            if (ref != null) {
-                reference.setAttribute(param, ref);
-            }
-        }
     }
 
 }

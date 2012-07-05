@@ -19,6 +19,8 @@ import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
 import org.webreformatter.ebook.remote.AbstractSite;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader;
+import org.webreformatter.ebook.remote.RemoteResourceLoader;
 import org.webreformatter.ebook.remote.formatters.IFormatterFactory;
 import org.webreformatter.ebook.remote.formatters.MinisiteFormatterFactory;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
@@ -27,12 +29,12 @@ import org.webreformatter.ebook.remote.presenter.IndexPagePresenter.IIndexPageSc
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.webreformatter.ebook.remote.presenter.PresenterManager;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
+import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
 import org.webreformatter.ebook.remote.presenter.RemoteResourcePresenter;
 import org.webreformatter.ebook.remote.scrappers.CirclesUrlProvider;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapperFactory;
 import org.webreformatter.ebook.remote.scrappers.PageScrapper;
-import org.webreformatter.ebook.remote.scrappers.PageScrapper.IUrlProvider;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper;
 
@@ -57,31 +59,30 @@ public class PasSageEnSeineSite extends AbstractSite {
         private String fTitleXPath;
 
         public GenericPageScrapper(
-            IUrlProvider urlProvider,
             RemotePagePresenter presenter,
             String contentXPath,
             String titleXPath) {
-            super(urlProvider, presenter);
+            super(presenter);
             fContentXPath = contentXPath;
             fTitleXPath = titleXPath;
         }
 
         @Override
-        public XmlWrapper getContent() throws XmlException {
+        public XmlWrapper getContent() throws XmlException, IOException {
             splitContent();
             return fContent;
         }
 
         @Override
-        public String getTitle() throws XmlException {
+        public String getTitle() throws XmlException, IOException {
             splitContent();
             return fTitle;
         }
 
-        protected void onSplitContent() throws XmlException {
+        protected void onSplitContent() throws XmlException, IOException {
         }
 
-        private void splitContent() throws XmlException {
+        private void splitContent() throws XmlException, IOException {
             if (fContent == null) {
                 XmlWrapper page = getPage();
                 fContent = page.eval(fContentXPath);
@@ -111,18 +112,17 @@ public class PasSageEnSeineSite extends AbstractSite {
 
         private FormattedDate fDate;
 
-        public OwniPageScrapper(
-            IUrlProvider urlProvider,
-            RemotePagePresenter presenter) {
+        public OwniPageScrapper(RemotePagePresenter presenter) {
             super(
-                urlProvider,
                 presenter,
                 "//html:div[@class='entry_texte']",
                 "//html:h1[@class='entry_title']");
         }
 
         @Override
-        public Map<String, Object> getProperties() throws XmlException {
+        public Map<String, Object> getProperties()
+            throws XmlException,
+            IOException {
             Map<String, Object> properties = super.getProperties();
             properties.put("date", fDate);
             properties.put("authorUrl", fAuthorRef);
@@ -131,7 +131,7 @@ public class PasSageEnSeineSite extends AbstractSite {
         }
 
         @Override
-        protected void onSplitContent() throws XmlException {
+        protected void onSplitContent() throws XmlException, IOException {
             XmlWrapper page = getPage();
             XmlWrapper meta = page.eval("//html:div[@class='metaPost']");
             if (meta != null) {
@@ -247,12 +247,7 @@ public class PasSageEnSeineSite extends AbstractSite {
         implements
         IScrapperFactory {
 
-        private IUrlProvider fUrlProvider;
-
         public PasSageEnSeineScrapperFactory() {
-            fUrlProvider = new CirclesUrlProvider(
-                Arrays.<String> asList(XWIKI_URL_BASE),
-                Arrays.<String> asList(OWNI_URL_BASE));
         }
 
         @SuppressWarnings("unchecked")
@@ -265,24 +260,22 @@ public class PasSageEnSeineSite extends AbstractSite {
                 // HTML Pages
                 RemotePagePresenter p = (RemotePagePresenter) presenter;
                 if (scrapperType == IIndexPageScrapper.class) {
-                    result = new XWikiIndexPageScrapper(fUrlProvider, p);
+                    result = new XWikiIndexPageScrapper(p);
                 } else if (scrapperType == IInnerPageScrapper.class) {
                     Uri pageUri = p.getResourceUrl();
                     String str = pageUri.toString();
                     if (str.startsWith(XWIKI_URL_BASE)) {
-                        result = new XWikiInternalPageScrapper(fUrlProvider, p);
+                        result = new XWikiInternalPageScrapper(p);
                     } else if (str.startsWith(OWNI_URL_BASE)) {
-                        result = new OwniPageScrapper(fUrlProvider, p);
+                        result = new OwniPageScrapper(p);
                     } else if (str.startsWith(STANDLOG_BASE)) {
                         result = new GenericPageScrapper(
-                            fUrlProvider,
                             p,
                             "//html:div[@class='post-content']",
                             "//html:div[@class='post']/*[@class='post-title']");
                     } else {
                         // FIXME: !!!
                         result = new GenericPageScrapper(
-                            fUrlProvider,
                             p,
                             "//html:body",
                             "//html:title");
@@ -308,10 +301,15 @@ public class PasSageEnSeineSite extends AbstractSite {
 
     private Uri fResourceBaseUri;
 
+    private IUrlProvider fUrlProvider;
+
     public PasSageEnSeineSite(String indexPageName, String resourceBaseUri)
         throws IOException {
         super(new Uri(XWIKI_URL_BASE + indexPageName));
         fResourceBaseUri = new Uri(resourceBaseUri);
+        fUrlProvider = new CirclesUrlProvider(
+            Arrays.<String> asList(XWIKI_URL_BASE),
+            Arrays.<String> asList(OWNI_URL_BASE));
     }
 
     @Override
@@ -321,7 +319,12 @@ public class PasSageEnSeineSite extends AbstractSite {
 
     @Override
     protected IPresenterManager newPresenterManager() throws IOException {
-        return new PresenterManager(this, fResourceBaseUri);
+        return new PresenterManager(this, fUrlProvider, fResourceBaseUri);
+    }
+
+    @Override
+    protected IRemoteResourceLoader newResourceLoader() throws IOException {
+        return new RemoteResourceLoader();
     }
 
     @Override

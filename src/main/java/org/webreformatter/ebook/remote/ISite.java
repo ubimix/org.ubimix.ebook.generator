@@ -19,6 +19,8 @@ public interface ISite {
 
     IPresenterManager getPresenterManager() throws IOException;
 
+    IRemoteResourceLoader getResourceLoader() throws IOException;
+
     IScrapperFactory getScrapperFactory() throws IOException;
 
     Uri getSiteUrl();

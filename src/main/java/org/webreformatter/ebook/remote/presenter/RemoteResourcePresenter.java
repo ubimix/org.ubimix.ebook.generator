@@ -9,8 +9,8 @@ import org.webreformatter.commons.digests.Sha1Digest;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.ebook.BookId;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
 
 /**
  * @author kotelnikov
@@ -166,7 +166,7 @@ public abstract class RemoteResourcePresenter extends Base
         return fSite;
     }
 
-    public boolean isValid() {
+    public boolean isValid() throws IOException {
         return fResource.getStatus().isOkOrNotModified();
     }
 

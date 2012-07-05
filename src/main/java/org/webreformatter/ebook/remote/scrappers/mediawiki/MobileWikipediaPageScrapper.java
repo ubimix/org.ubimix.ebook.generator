@@ -3,6 +3,8 @@
  */
 package org.webreformatter.ebook.remote.scrappers.mediawiki;
 
+import java.io.IOException;
+
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
@@ -24,13 +26,11 @@ public class MobileWikipediaPageScrapper extends PageScrapper
      * @param page
      * @param pageUri
      */
-    public MobileWikipediaPageScrapper(
-        IUrlProvider urlProvider,
-        RemotePagePresenter presenter) {
-        super(urlProvider, presenter);
+    public MobileWikipediaPageScrapper(RemotePagePresenter presenter) {
+        super(presenter);
     }
 
-    private void checkContent() throws XmlException {
+    private void checkContent() throws XmlException, IOException {
         if (fContent == null) {
             XmlWrapper page = getPage();
             fContent = page.eval("//html:div[@id='content']");
@@ -51,13 +51,13 @@ public class MobileWikipediaPageScrapper extends PageScrapper
     }
 
     @Override
-    public XmlWrapper getContent() throws XmlException {
+    public XmlWrapper getContent() throws XmlException, IOException {
         checkContent();
         return fContent;
     }
 
     @Override
-    public String getTitle() throws XmlException {
+    public String getTitle() throws XmlException, IOException {
         checkContent();
         return fTitle;
     }

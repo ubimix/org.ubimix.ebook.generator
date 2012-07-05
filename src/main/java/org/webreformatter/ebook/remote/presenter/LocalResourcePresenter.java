@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.formatters.IFormatter;
 import org.webreformatter.ebook.remote.formatters.ResourceCopyFormatter;
 
