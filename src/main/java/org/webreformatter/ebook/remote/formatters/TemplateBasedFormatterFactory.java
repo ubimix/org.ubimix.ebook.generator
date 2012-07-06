@@ -102,6 +102,15 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             return !getChildren(item).isEmpty();
         }
 
+        public boolean isActive(String path) throws IOException {
+            return isActive(new Uri(path));
+        }
+
+        public boolean isActive(Uri path) throws IOException {
+            Uri resourcePath = fPresenter.getResourcePath();
+            return resourcePath.equals(path);
+        }
+
         public String pathTo(String path) throws IOException {
             if (path.startsWith("/")) {
                 path = path.substring(1);
