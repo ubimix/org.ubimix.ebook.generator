@@ -12,15 +12,17 @@ import org.webreformatter.commons.json.ext.DateFormatter;
 import org.webreformatter.commons.json.ext.FormattedDate;
 import org.webreformatter.commons.xml.XHTMLUtils;
 import org.webreformatter.commons.xml.XmlAcceptor;
+import org.webreformatter.commons.xml.XmlAcceptor.XmlVisitor;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
-import org.webreformatter.commons.xml.XmlAcceptor.XmlVisitor;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
 import org.webreformatter.ebook.remote.presenter.RemoteResourcePresenter;
 import org.webreformatter.ebook.remote.scrappers.GenericPageScrapper;
 
 public class OwniPageScrapper extends GenericPageScrapper {
+
+    public static final String BASE_URL = "http://owni.fr/";
 
     private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
         "dd MMMMM yyyy",
@@ -45,8 +47,9 @@ public class OwniPageScrapper extends GenericPageScrapper {
         IOException {
         Map<String, Object> properties = super.getHtmlProperties();
         properties.put("date", fDate);
-        properties.put("authorUrl", fAuthorRef);
-        properties.put("author", fAuthors);
+        properties.put("pageAuthorUrl", fAuthorRef);
+        properties.put("pageAuthor", fAuthors);
+        properties.put("url", fPresenter.getResourceUrl());
         return properties;
     }
 

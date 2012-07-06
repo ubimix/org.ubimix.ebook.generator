@@ -88,10 +88,14 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
         }
 
         public String getProperty(String key) throws XmlException, IOException {
+            return getProperty("properties", key);
+        }
+
+        protected String getProperty(String type, String key)
+            throws XmlException,
+            IOException {
             JsonBookSection section = fPresenter.getSection();
-            JsonObject properties = section.getValue(
-                "properties",
-                JsonObject.FACTORY);
+            JsonObject properties = section.getValue(type, JsonObject.FACTORY);
             String result = null;
             if (properties != null) {
                 result = properties.getString(key);
@@ -103,6 +107,12 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             IndexPagePresenter indexPresenter = getIndexPresenter();
             String siteTitle = esc(indexPresenter.getBookMeta().getBookTitle());
             return siteTitle;
+        }
+
+        public String getSystemProperty(String key)
+            throws XmlException,
+            IOException {
+            return getProperty("systemProperties", key);
         }
 
         public String getTitle() throws XmlException, IOException {

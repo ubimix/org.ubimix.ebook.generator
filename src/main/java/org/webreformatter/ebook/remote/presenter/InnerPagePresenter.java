@@ -22,7 +22,6 @@ import org.webreformatter.commons.xml.XmlAcceptor.XmlVisitor;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.html.HtmlBurner;
-import org.webreformatter.commons.xml.html.HtmlBurner.HtmlBurnerConfig;
 import org.webreformatter.commons.xml.html.TagDictionary;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
@@ -73,15 +72,9 @@ public class InnerPagePresenter extends RemotePagePresenter
 
     protected String extractContent(XmlWrapper div) throws IOException {
         Element tag = div.getRootElement();
-        HtmlBurner burner = new HtmlBurner(new HtmlBurnerConfig() {
-
+        HtmlBurner burner = new HtmlBurner() {
             @Override
             public boolean isExcludedAttribute(String name, Attr attr) {
-                Element parentTag = attr.getOwnerElement();
-                String tagName = XHTMLUtils.getHTMLName(parentTag);
-                if (TagDictionary.IFRAME.equals(tagName)) {
-                    return false;
-                }
                 name = name.toLowerCase();
                 if (TagDictionary.ATTR_STYLE.equals(name)) {
                     return true;
@@ -107,13 +100,27 @@ public class InnerPagePresenter extends RemotePagePresenter
 
             @Override
             public boolean keepIntact(String name, Element element) {
+                if (TagDictionary.OBJECT.equals(name)) {
+                    return true;
+                }
                 String style = element.getAttribute(TagDictionary.ATTR_CLASS);
                 if (style != null && style.startsWith("umx_")) {
                     return true;
                 }
                 return false;
             }
-        });
+
+            @Override
+            protected void removeUnusedAttributes(Element e) {
+                String tagName = XHTMLUtils.getHTMLName(e);
+                if (TagDictionary.IFRAME.equals(tagName)) {
+                    e.setAttribute("width", "100%");
+                } else {
+                    super.removeUnusedAttributes(e);
+                }
+            }
+
+        };
         burner.burnHtml(tag);
 
         final Uri pagePath = getResourcePath();

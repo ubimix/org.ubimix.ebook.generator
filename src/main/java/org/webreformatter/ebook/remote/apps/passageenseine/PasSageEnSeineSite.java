@@ -12,11 +12,9 @@ import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageSc
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
 import org.webreformatter.ebook.remote.scrappers.CirclesUrlProvider;
-import org.webreformatter.ebook.remote.scrappers.GenericPageScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapperFactory;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
-import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper;
 
 /**
  * @author kotelnikov
@@ -47,26 +45,16 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
                 } else if (scrapperType == IInnerPageScrapper.class) {
                     Uri pageUri = p.getResourceUrl();
                     String str = pageUri.toString();
-                    if (str.startsWith(PasSageEnSeineSite.XWIKI_URL_BASE)) {
-                        result = new XWikiInternalPageScrapper(p);
-                    } else if (str.startsWith(PasSageEnSeineSite.OWNI_URL_BASE)) {
+                    if (str.startsWith(BeebappPageScrapper.BASE_URL)) {
+                        result = new BeebappPageScrapper(p);
+                    } else if (str.startsWith(OwniPageScrapper.BASE_URL)) {
                         result = new OwniPageScrapper(p);
-                    } else if (str.startsWith(PasSageEnSeineSite.STANDLOG_BASE)) {
-                        result = new GenericPageScrapper(
-                            p,
-                            "//html:div[@class='post-content']",
-                            "//html:div[@class='post']/*[@class='post-title']");
-                    } else if (str.startsWith(PasSageEnSeineSite.LEMONDE_BASE)) {
-                        result = new GenericPageScrapper(
-                            p,
-                            "//html:article[@class='article article_normal']/html:div[@class='txt15_140']",
-                            "//html:article[@class='article article_normal']/html:h1");
+                    } else if (str.startsWith(StandlogScrapper.BASE_URL)) {
+                        result = new StandlogScrapper(p);
+                    } else if (str.startsWith(LeMondeScrapper.BASE_URL)) {
+                        result = new LeMondeScrapper(p);
                     } else {
-                        // FIXME: !!!
-                        result = new GenericPageScrapper(
-                            p,
-                            "//html:body",
-                            "//html:title");
+                        result = new AutoPageScrapper(p);
                     }
                 }
             }
@@ -80,21 +68,9 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
         }
     }
 
-    static final String LEMONDE_BASE = "http://www.lemonde.fr/";
-
-    static final String OWNI_URL_BASE = "http://owni.fr/";
-
-    // FIXME: remove it
-    static final String STANDLOG_BASE = "http://standblog.org/blog/";
-
-    static final String XWIKI_URL_BASE = "https://beebapp.ubimix.com/xwiki/bin/view/";
-
-    private String fSitePrefixStr;
-
     public PasSageEnSeineSite(IVariableProvider propertyProvider)
         throws IOException {
         super(propertyProvider);
-        fSitePrefixStr = propertyProvider.getValue("siteBaseUrl");
     }
 
     @Override
@@ -105,8 +81,11 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
     @Override
     protected IUrlProvider newUrlProvider() {
         return new CirclesUrlProvider(
-            Arrays.<String> asList(XWIKI_URL_BASE),
-            Arrays.<String> asList(OWNI_URL_BASE, LEMONDE_BASE, STANDLOG_BASE));
+            Arrays.<String> asList(BeebappPageScrapper.BASE_URL),
+            Arrays.<String> asList(
+                OwniPageScrapper.BASE_URL,
+                LeMondeScrapper.BASE_URL,
+                StandlogScrapper.BASE_URL));
     }
 
 }
