@@ -25,8 +25,8 @@ import org.webreformatter.commons.xml.html.HtmlBurner;
 import org.webreformatter.commons.xml.html.HtmlBurner.HtmlBurnerConfig;
 import org.webreformatter.commons.xml.html.TagDictionary;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
-import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.formatters.IFormatter;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 
@@ -56,6 +56,8 @@ public class InnerPagePresenter extends RemotePagePresenter
     private XmlWrapper fContentXml;
 
     private IInnerPageScrapper fFieldAccessor;
+
+    private JsonBookSection fSection;
 
     public InnerPagePresenter(
         ISite site,
@@ -216,25 +218,27 @@ public class InnerPagePresenter extends RemotePagePresenter
     }
 
     public JsonBookSection getSection() throws XmlException, IOException {
-        JsonBookSection section = new JsonBookSection();
-        String title = fFieldAccessor.getTitle();
-        section.setTitle(title);
-        String content = getContentStr();
-        // XmlWrapper contentElement = getExtractedContentElement();
-        section.setContent(content);
-        Uri url = getResourceUrl();
-        setFullUrl(section, url);
+        if (fSection == null) {
+            JsonBookSection section = new JsonBookSection();
+            String title = fFieldAccessor.getTitle();
+            section.setTitle(title);
+            String content = getContentStr();
+            // XmlWrapper contentElement = getExtractedContentElement();
+            section.setContent(content);
+            Uri url = getResourceUrl();
+            setFullUrl(section, url);
 
-        JsonObject propObj = new JsonObject();
-        section.setValue("properties", propObj);
-        Map<String, Object> properties = fFieldAccessor.getProperties();
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            propObj.setValue(key, value);
+            JsonObject propObj = new JsonObject();
+            section.setValue("properties", propObj);
+            Map<String, Object> properties = fFieldAccessor.getProperties();
+            for (Map.Entry<String, Object> entry : properties.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                propObj.setValue(key, value);
+            }
+            fSection = section;
         }
-
-        return section;
+        return fSection;
     }
 
 }
