@@ -1,35 +1,20 @@
 package org.webreformatter.ebook.remote.apps.passageenseine;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
 
-import org.w3c.dom.Element;
-import org.webreformatter.commons.json.ext.DateFormatter;
-import org.webreformatter.commons.json.ext.FormattedDate;
 import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
-import org.webreformatter.commons.xml.XHTMLUtils;
-import org.webreformatter.commons.xml.XmlAcceptor;
-import org.webreformatter.commons.xml.XmlAcceptor.XmlVisitor;
-import org.webreformatter.commons.xml.XmlException;
-import org.webreformatter.commons.xml.XmlWrapper;
-import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
 import org.webreformatter.ebook.remote.AbstractConfiguredSite;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
 import org.webreformatter.ebook.remote.presenter.IndexPagePresenter.IIndexPageScrapper;
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
-import org.webreformatter.ebook.remote.presenter.RemoteResourcePresenter;
 import org.webreformatter.ebook.remote.scrappers.CirclesUrlProvider;
+import org.webreformatter.ebook.remote.scrappers.GenericPageScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapperFactory;
-import org.webreformatter.ebook.remote.scrappers.PageScrapper;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper;
 
@@ -37,203 +22,6 @@ import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper
  * @author kotelnikov
  */
 public class PasSageEnSeineSite extends AbstractConfiguredSite {
-
-    /**
-     * @author kotelnikov
-     */
-    public static class GenericPageScrapper extends PageScrapper
-        implements
-        IInnerPageScrapper {
-
-        protected XmlWrapper fContent;
-
-        private String fContentXPath;
-
-        protected String fTitle;
-
-        private String fTitleXPath;
-
-        public GenericPageScrapper(
-            RemotePagePresenter presenter,
-            String contentXPath,
-            String titleXPath) {
-            super(presenter);
-            fContentXPath = contentXPath;
-            fTitleXPath = titleXPath;
-        }
-
-        @Override
-        public XmlWrapper getContent() throws XmlException, IOException {
-            splitContent();
-            return fContent;
-        }
-
-        @Override
-        public String getTitle() throws XmlException, IOException {
-            splitContent();
-            return fTitle;
-        }
-
-        protected void onSplitContent() throws XmlException, IOException {
-        }
-
-        private void splitContent() throws XmlException, IOException {
-            if (fContent == null) {
-                XmlWrapper page = getPage();
-                fContent = page.eval(fContentXPath);
-                XmlWrapper titleElement = page.eval(fTitleXPath);
-                if (titleElement == null) {
-                    titleElement = page.eval("//html:title");
-                }
-                if (titleElement != null) {
-                    titleElement.remove();
-                    fTitle = titleElement.toText();
-                }
-                onSplitContent();
-            }
-        }
-
-    }
-
-    public static class OwniPageScrapper extends GenericPageScrapper {
-
-        private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
-            "dd MMMMM yyyy",
-            Locale.FRANCE);
-
-        private String fAuthorRef;
-
-        private String fAuthors;
-
-        private FormattedDate fDate;
-
-        public OwniPageScrapper(RemotePagePresenter presenter) {
-            super(
-                presenter,
-                "//html:div[@class='entry_texte']",
-                "//html:h1[@class='entry_title']");
-        }
-
-        @Override
-        public Map<String, Object> getHtmlProperties()
-            throws XmlException,
-            IOException {
-            Map<String, Object> properties = super.getHtmlProperties();
-            properties.put("date", fDate);
-            properties.put("authorUrl", fAuthorRef);
-            properties.put("author", fAuthors);
-            return properties;
-        }
-
-        @Override
-        protected void onSplitContent() throws XmlException, IOException {
-            XmlWrapper page = getPage();
-            XmlWrapper meta = page.eval("//html:div[@class='metaPost']");
-            if (meta != null) {
-                String str = meta.evalStr(".//html:span[@class='date']");
-                if (str != null) {
-                    str = str.trim().toLowerCase();
-                    if (str.startsWith("le ")) {
-                        str = str.substring("le ".length());
-                        str = str.trim();
-                    }
-                    try {
-                        Date date = DATE_FORMAT.parse(str);
-                        fDate = DateFormatter.formatDate(date);
-                    } catch (ParseException e) {
-                    }
-                }
-                XmlWrapper authorRefTag = meta.eval(".//html:a[@rel='author']");
-                if (authorRefTag != null) {
-                    fAuthors = authorRefTag.toText();
-                    fAuthorRef = authorRefTag.getAttribute("href");
-                }
-            }
-
-            final XmlContext xmlContext = fContent.getXmlContext();
-            XmlAcceptor.accept(fContent.getRootElement(), new XmlVisitor() {
-                protected void buildIframeMediaBox(
-                    final XmlContext xmlContext,
-                    Element node) throws XmlException {
-                    XmlWrapper w = xmlContext.wrap(node);
-                    String src = w.getAttribute("src");
-                    if (src == null || !src.contains("player.vimeo.com")) {
-                        return;
-                    }
-                    wrapInMediaBox(w);
-                }
-
-                protected void buildMediaBox(
-                    final XmlContext xmlContext,
-                    Element node) throws XmlException {
-                    String cls = node.getAttribute("class");
-                    if (cls.contains("wp-caption")) {
-                        XmlWrapper w = xmlContext.wrap(node);
-                        w.removeAttribute("class");
-                        w.removeAttribute("style");
-                        w.removeAttribute("id");
-                        w.setAttribute("class", "umx_media_box");
-                        XmlWrapper img = w.eval(".//html:img");
-                        XmlWrapper captionText = w
-                            .eval(".//*[@class='wp-caption-text']");
-                        w.removeChildren();
-                        XmlWrapper mediaDiv = w.appendElement("html:div");
-                        mediaDiv.setAttribute("class", "umx_media");
-                        if (img != null) {
-                            mediaDiv.append(img);
-                        }
-                        XmlWrapper captionDiv = w.appendElement("html:div");
-                        captionDiv.setAttribute("class", "umx_description");
-                        if (captionText != null) {
-                            captionText.copyTo(captionDiv);
-                        }
-                    }
-                }
-
-                private void buildMediaBoxFromFullSizeImages(
-                    XmlContext xmlContext,
-                    Element node) throws XmlException {
-                    String cls = node.getAttribute("class");
-                    if (cls.contains("size-full")) {
-                        XmlWrapper w = xmlContext.wrap(node);
-                        w.removeAttribute("class");
-                        wrapInMediaBox(w);
-                    }
-                }
-
-                @Override
-                public void visit(Element node) {
-                    String name = XHTMLUtils.getHTMLName(node);
-                    try {
-                        if ("iframe".equals(name)) {
-                            buildIframeMediaBox(xmlContext, node);
-                        } else if ("div".equals(name)) {
-                            buildMediaBox(xmlContext, node);
-                        } else if ("img".equals(name)) {
-                            buildMediaBoxFromFullSizeImages(xmlContext, node);
-                        }
-                    } catch (Throwable t) {
-                        throw RemoteResourcePresenter.onError(
-                            RuntimeException.class,
-                            "Can not transform a media box.",
-                            t);
-                    }
-                    super.visit(node);
-                }
-
-                private void wrapInMediaBox(XmlWrapper w) throws XmlException {
-                    XmlWrapper parent = w.getParent();
-                    XmlWrapper div = parent.appendElement("html:div");
-                    parent.insertBefore(w, div);
-                    div.setAttribute("class", "umx_media_box");
-                    XmlWrapper mediaDiv = div.appendElement("html:div");
-                    mediaDiv.setAttribute("class", "umx_media");
-                    mediaDiv.append(w);
-                }
-
-            });
-        }
-    }
 
     /**
      * @author kotelnikov
@@ -259,15 +47,20 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
                 } else if (scrapperType == IInnerPageScrapper.class) {
                     Uri pageUri = p.getResourceUrl();
                     String str = pageUri.toString();
-                    if (str.startsWith(XWIKI_URL_BASE)) {
+                    if (str.startsWith(PasSageEnSeineSite.XWIKI_URL_BASE)) {
                         result = new XWikiInternalPageScrapper(p);
-                    } else if (str.startsWith(OWNI_URL_BASE)) {
+                    } else if (str.startsWith(PasSageEnSeineSite.OWNI_URL_BASE)) {
                         result = new OwniPageScrapper(p);
-                    } else if (str.startsWith(STANDLOG_BASE)) {
+                    } else if (str.startsWith(PasSageEnSeineSite.STANDLOG_BASE)) {
                         result = new GenericPageScrapper(
                             p,
                             "//html:div[@class='post-content']",
                             "//html:div[@class='post']/*[@class='post-title']");
+                    } else if (str.startsWith(PasSageEnSeineSite.LEMONDE_BASE)) {
+                        result = new GenericPageScrapper(
+                            p,
+                            "//html:article[@class='article article_normal']/html:div[@class='txt15_140']",
+                            "//html:article[@class='article article_normal']/html:h1");
                     } else {
                         // FIXME: !!!
                         result = new GenericPageScrapper(
@@ -287,12 +80,14 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
         }
     }
 
-    private static final String OWNI_URL_BASE = "http://owni.fr/";
+    static final String LEMONDE_BASE = "http://www.lemonde.fr/";
+
+    static final String OWNI_URL_BASE = "http://owni.fr/";
 
     // FIXME: remove it
-    private static final String STANDLOG_BASE = "http://standblog.org/blog/";
+    static final String STANDLOG_BASE = "http://standblog.org/blog/";
 
-    private static final String XWIKI_URL_BASE = "https://beebapp.ubimix.com/xwiki/bin/view/";
+    static final String XWIKI_URL_BASE = "https://beebapp.ubimix.com/xwiki/bin/view/";
 
     private String fSitePrefixStr;
 
@@ -311,7 +106,7 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
     protected IUrlProvider newUrlProvider() {
         return new CirclesUrlProvider(
             Arrays.<String> asList(XWIKI_URL_BASE),
-            Arrays.<String> asList(OWNI_URL_BASE));
+            Arrays.<String> asList(OWNI_URL_BASE, LEMONDE_BASE, STANDLOG_BASE));
     }
 
 }

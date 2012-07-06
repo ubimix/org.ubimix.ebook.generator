@@ -12,7 +12,7 @@ scrapper() {
 }
 
 books() {
-        cd ${dir}/../../../webreformatter.ebooks/projects
+        cd ${dir}/../../../webreformatter.ebook/projects
         mvn clean install -P cli
 }
 
