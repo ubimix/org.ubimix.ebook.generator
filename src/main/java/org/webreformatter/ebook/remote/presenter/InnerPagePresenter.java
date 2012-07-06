@@ -73,11 +73,15 @@ public class InnerPagePresenter extends RemotePagePresenter
 
     protected String extractContent(XmlWrapper div) throws IOException {
         Element tag = div.getRootElement();
-
         HtmlBurner burner = new HtmlBurner(new HtmlBurnerConfig() {
 
             @Override
             public boolean isExcludedAttribute(String name, Attr attr) {
+                Element parentTag = attr.getOwnerElement();
+                String tagName = XHTMLUtils.getHTMLName(parentTag);
+                if (TagDictionary.IFRAME.equals(tagName)) {
+                    return false;
+                }
                 name = name.toLowerCase();
                 if (TagDictionary.ATTR_STYLE.equals(name)) {
                     return true;
@@ -86,7 +90,7 @@ public class InnerPagePresenter extends RemotePagePresenter
                     String value = attr.getValue();
                     return !value.startsWith("umx_");
                 }
-                if ("_excluded".equals(name)) {
+                if (RemotePagePresenter.isExcludedAttribute(name)) {
                     return true;
                 }
                 return super.isExcludedAttribute(name, attr);
@@ -130,7 +134,7 @@ public class InnerPagePresenter extends RemotePagePresenter
                 for (int i = 0; i < attributes.getLength(); i++) {
                     Attr attr = (Attr) attributes.item(i);
                     String attrName = XHTMLUtils.getHTMLName(attr);
-                    if ("_excluded".equals(attrName)) {
+                    if (RemotePagePresenter.isExcludedAttribute(attrName)) {
                         continue;
                     }
                     String value = attr.getValue();
@@ -169,6 +173,10 @@ public class InnerPagePresenter extends RemotePagePresenter
         throws XmlException,
         IOException {
         XmlWrapper xml = getExtractedContentElement();
+        if (xml == null) {
+            return;
+        }
+
         XmlWrapper div = xml.newCopy("html:div");
         HtmlTablePropertiesExtractor extractor = new HtmlTablePropertiesExtractor();
         extractor.extractProperties(div, new IPropertyListener() {
@@ -244,7 +252,8 @@ public class InnerPagePresenter extends RemotePagePresenter
         if (xml != null) {
             List<XmlWrapper> references = xml.evalList(xpath);
             for (XmlWrapper reference : references) {
-                String excluded = reference.getAttribute("_excluded");
+                String excluded = reference
+                    .getAttribute(RemotePagePresenter.ATTR_EXCLUDED);
                 if (!"true".equals(excluded)) {
                     String ref = reference.getAttribute(param);
                     Uri uri = new Uri(ref);

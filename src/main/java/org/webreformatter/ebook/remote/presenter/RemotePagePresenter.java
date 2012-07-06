@@ -54,6 +54,8 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
 
     public static final String _PREFIX_XHTML = "html";
 
+    public static final String ATTR_EXCLUDED = "_excluded";
+
     private static SimpleNamespaceContext HTML_NAMESPACE_CONTEXT = new SimpleNamespaceContext(
         _PREFIX_XHTML,
         _NS_XHTML);
@@ -67,6 +69,10 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
     public static Uri getFullUrl(JsonObject obj) {
         String str = obj.getString("_fullUrl");
         return str != null ? new Uri(str) : null;
+    }
+
+    public static boolean isExcludedAttribute(String attrName) {
+        return ATTR_EXCLUDED.equals(attrName);
     }
 
     public static void setFullUrl(JsonObject obj, Uri uri) {
@@ -191,7 +197,7 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
                 }
                 reference.setAttribute(param, uri.toString());
                 if (excluded) {
-                    reference.setAttribute("_excluded", "true");
+                    reference.setAttribute(ATTR_EXCLUDED, "true");
                 }
             }
         }
