@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.webreformatter.commons.json.JsonObject;
 import org.webreformatter.commons.templates.ITemplateProcessor;
 import org.webreformatter.commons.templates.ITemplateProvider;
 import org.webreformatter.commons.uri.Uri;
@@ -67,16 +68,35 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
                 IndexPagePresenter indexPresenter = null;
                 ISite provider = fPresenter.getSite();
                 Uri indexUrl = provider.getSiteUrl();
-                IPresenter presenter = fPresenter
-                    .getSite()
-                    .getPresenterManager()
-                    .getPresenter(indexUrl, true);
+                IPresenter presenter = getPresenter(indexUrl, true);
                 if (presenter instanceof IndexPagePresenter) {
                     indexPresenter = (IndexPagePresenter) presenter;
                 }
                 fIndexPresenter = indexPresenter;
             }
             return fIndexPresenter;
+        }
+
+        protected IPresenter getPresenter(Uri uri, boolean create)
+            throws IOException,
+            XmlException {
+            IPresenter presenter = fPresenter
+                .getSite()
+                .getPresenterManager()
+                .getPresenter(uri, create);
+            return presenter;
+        }
+
+        public String getProperty(String key) throws XmlException, IOException {
+            JsonBookSection section = fPresenter.getSection();
+            JsonObject properties = section.getValue(
+                "properties",
+                JsonObject.FACTORY);
+            String result = null;
+            if (properties != null) {
+                result = properties.getString(key);
+            }
+            return result;
         }
 
         public String getSiteTitle() throws IOException, XmlException {
@@ -122,6 +142,21 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             Uri resourcePath = fPresenter.getResourcePath();
             Uri result = resourcePath.getRelative(path);
             return result.toString();
+        }
+
+        public String urlToPath(String url) throws IOException, XmlException {
+            return urlToPath(new Uri(url));
+        }
+
+        public String urlToPath(Uri uri) throws IOException, XmlException {
+            String result = null;
+            IPresenter presenter = getPresenter(uri, true);
+            if (presenter instanceof IContentPresenter) {
+                Uri resourcePath = ((IContentPresenter) presenter)
+                    .getResourcePath();
+                result = pathTo(resourcePath);
+            }
+            return result;
         }
 
     }

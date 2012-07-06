@@ -31,7 +31,7 @@ public abstract class PageScrapper implements IScrapper {
         return fPresenter.getHtmlPage();
     }
 
-    public Map<String, Object> getProperties() throws XmlException, IOException {
+    public Map<String, Object> getHtmlProperties() throws XmlException, IOException {
         Map<String, Object> properties = new HashMap<String, Object>();
         Uri url = fPresenter.getResourceUrl();
         properties.put("url", url + "");

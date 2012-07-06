@@ -29,6 +29,8 @@ import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
 import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.formatters.IFormatter;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
+import org.webreformatter.scrapper.utils.HtmlPropertiesExtractor.IPropertyListener;
+import org.webreformatter.scrapper.utils.HtmlTablePropertiesExtractor;
 
 /**
  * @author kotelnikov
@@ -47,7 +49,9 @@ public class InnerPagePresenter extends RemotePagePresenter
 
         XmlWrapper getContent() throws XmlException, IOException;
 
-        Map<String, Object> getProperties() throws XmlException, IOException;
+        Map<String, Object> getHtmlProperties()
+            throws XmlException,
+            IOException;
 
         String getTitle() throws XmlException, IOException;
 
@@ -55,7 +59,7 @@ public class InnerPagePresenter extends RemotePagePresenter
 
     private XmlWrapper fContentXml;
 
-    private IInnerPageScrapper fFieldAccessor;
+    private IInnerPageScrapper fScrapper;
 
     private JsonBookSection fSection;
 
@@ -64,21 +68,12 @@ public class InnerPagePresenter extends RemotePagePresenter
         RemoteResource resource,
         IUrlProvider urlProvider) throws IOException, XmlException {
         super(site, resource, urlProvider);
-        fFieldAccessor = newScrapper(this, IInnerPageScrapper.class);
+        fScrapper = newScrapper(this, IInnerPageScrapper.class);
     }
 
-    public XmlWrapper getContent() throws XmlException, IOException {
-        XmlWrapper xml = getExtractedContentElement();
-        XmlWrapper div = xml.newCopy("html:div");
-        localizeReferences(div, ".//html:a[@href]", "href");
-        localizeReferences(div, ".//html:img", "src");
-        return div;
-    }
-
-    public String getContentStr() throws XmlException, IOException {
-        XmlWrapper xml = getExtractedContentElement();
-        XmlWrapper div = xml.newCopy("html:div");
+    protected String extractContent(XmlWrapper div) throws IOException {
         Element tag = div.getRootElement();
+
         HtmlBurner burner = new HtmlBurner(new HtmlBurnerConfig() {
 
             @Override
@@ -170,11 +165,54 @@ public class InnerPagePresenter extends RemotePagePresenter
         return buf.toString();
     }
 
+    private void extractInfo(StringBuilder content, final JsonObject properties)
+        throws XmlException,
+        IOException {
+        XmlWrapper xml = getExtractedContentElement();
+        XmlWrapper div = xml.newCopy("html:div");
+        HtmlTablePropertiesExtractor extractor = new HtmlTablePropertiesExtractor();
+        extractor.extractProperties(div, new IPropertyListener() {
+            @Override
+            public void onPropertyNode(String name, XmlWrapper valueNode)
+                throws XmlException {
+                boolean ok = false;
+                XmlWrapper e = valueNode.getFirstElement();
+                if (e.getNext() == null) {
+                    String tagName = XHTMLUtils.getHTMLName(e.getRootElement());
+                    String ref = null;
+                    if ("img".equals(tagName)) {
+                        ref = e.getAttribute("src");
+                    } else if ("a".equals(tagName)) {
+                        ref = e.getAttribute("href");
+                    }
+                    if (ref != null) {
+                        properties.setValue(name, ref);
+                        ok = true;
+                    }
+                }
+                if (!ok) {
+                    String value = valueNode.toString(false, false);
+                    properties.setValue(name, value);
+                }
+            }
+        });
+        String str = extractContent(div);
+        content.append(str);
+    }
+
+    private XmlWrapper getContent() throws XmlException, IOException {
+        XmlWrapper xml = getExtractedContentElement();
+        XmlWrapper div = xml.newCopy("html:div");
+        localizeReferences(div, ".//html:a[@href]", "href");
+        localizeReferences(div, ".//html:img", "src");
+        return div;
+    }
+
     private XmlWrapper getExtractedContentElement()
         throws XmlException,
         IOException {
         if (fContentXml == null) {
-            fContentXml = fFieldAccessor.getContent();
+            fContentXml = fScrapper.getContent();
         }
         return fContentXml;
     }
@@ -197,7 +235,7 @@ public class InnerPagePresenter extends RemotePagePresenter
     }
 
     public String getPageTitle() throws XmlException, IOException {
-        return fFieldAccessor.getTitle();
+        return fScrapper.getTitle();
     }
 
     protected Set<Uri> getReferences(XmlWrapper xml, String xpath, String param)
@@ -220,25 +258,32 @@ public class InnerPagePresenter extends RemotePagePresenter
     public JsonBookSection getSection() throws XmlException, IOException {
         if (fSection == null) {
             JsonBookSection section = new JsonBookSection();
-            String title = fFieldAccessor.getTitle();
+            String title = fScrapper.getTitle();
             section.setTitle(title);
-            String content = getContentStr();
+
+            StringBuilder content = new StringBuilder();
+
+            JsonObject systemProperties = new JsonObject();
+            Map<String, Object> map = fScrapper.getHtmlProperties();
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                systemProperties.setValue(key, value);
+            }
+
+            JsonObject pageProperties = new JsonObject();
+            extractInfo(content, pageProperties);
+
             // XmlWrapper contentElement = getExtractedContentElement();
-            section.setContent(content);
+            section.setContent(content.toString());
+            section.setValue("properties", pageProperties);
+            section.setValue("systemProperties", systemProperties);
+
             Uri url = getResourceUrl();
             setFullUrl(section, url);
 
-            JsonObject propObj = new JsonObject();
-            section.setValue("properties", propObj);
-            Map<String, Object> properties = fFieldAccessor.getProperties();
-            for (Map.Entry<String, Object> entry : properties.entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                propObj.setValue(key, value);
-            }
             fSection = section;
         }
         return fSection;
     }
-
 }

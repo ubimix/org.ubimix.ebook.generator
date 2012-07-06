@@ -115,10 +115,10 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
         }
 
         @Override
-        public Map<String, Object> getProperties()
+        public Map<String, Object> getHtmlProperties()
             throws XmlException,
             IOException {
-            Map<String, Object> properties = super.getProperties();
+            Map<String, Object> properties = super.getHtmlProperties();
             properties.put("date", fDate);
             properties.put("authorUrl", fAuthorRef);
             properties.put("author", fAuthors);
