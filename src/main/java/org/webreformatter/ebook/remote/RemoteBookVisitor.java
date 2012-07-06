@@ -40,12 +40,15 @@ public class RemoteBookVisitor extends Base implements IBookVisitor {
         fSite = site;
     }
 
-    protected boolean addToList(Uri url) {
+    protected boolean addToList(RemotePagePresenter presenter) {
         boolean result = false;
-        Integer order = fVisitOrder.get(url);
+        Uri uri = presenter.getResourceUrl();
+        Integer order = fVisitOrder.get(uri);
         if (order == null) {
             order = fOrderCounter++;
-            fVisitOrder.put(url, order);
+            fVisitOrder.put(uri, order);
+            String pageName = newPageName(order);
+            presenter.setFileName(pageName);
             result = true;
         }
         return result;
@@ -70,7 +73,7 @@ public class RemoteBookVisitor extends Base implements IBookVisitor {
                 IPresenter presenter = getPresenter(uri, true);
                 if (presenter instanceof RemotePagePresenter) {
                     RemotePagePresenter childPresenter = (RemotePagePresenter) presenter;
-                    if (addToList(uri)) {
+                    if (addToList(childPresenter)) {
                         children.add(childPresenter);
                     }
                 }
@@ -92,6 +95,23 @@ public class RemoteBookVisitor extends Base implements IBookVisitor {
     @Override
     protected ISite getSite() {
         return fSite;
+    }
+
+    protected String newPageName(int order) {
+        String result;
+        if (order == 0) {
+            result = "index.html";
+        } else {
+            StringBuilder buf = new StringBuilder();
+            buf.append(Integer.toString(order));
+            while (buf.length() < 4) {
+                buf.insert(0, "0");
+            }
+            buf.insert(0, "page-");
+            buf.append(".html");
+            result = buf.toString();
+        }
+        return result;
     }
 
     @Override

@@ -100,6 +100,8 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             if (templateName == null) {
                 templateName = "main.vm";
             }
+            String folder = fPresenter.getResourcePathFolder();
+            templateName = folder + templateName;
             return templateName;
         }
 

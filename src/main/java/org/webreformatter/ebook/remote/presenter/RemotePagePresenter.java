@@ -11,8 +11,8 @@ import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.XmlWrapper.CompositeNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.SimpleNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
-import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.ISite;
 
 /**
  * @author kotelnikov
@@ -73,6 +73,8 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
         obj.setValue("_fullUrl", uri);
     }
 
+    private String fFileName;
+
     private XmlWrapper fPage;
 
     protected IUrlProvider fUrlProvider;
@@ -83,6 +85,16 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
         IUrlProvider urlProvider) throws IOException, XmlException {
         super(site, resource);
         fUrlProvider = urlProvider;
+    }
+
+    protected String getFileName() throws IOException {
+        if (fFileName == null) {
+            Uri uri = getResourceUrl();
+            String hash = getHash(uri);
+            String ext = fResource.getFileExtension();
+            fFileName = hash + "." + ext;
+        }
+        return fFileName;
     }
 
     public XmlWrapper getHtmlPage() throws IOException, XmlException {
@@ -107,8 +119,15 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
         IOException;
 
     @Override
-    protected String getResourcePathFolder() {
-        return "html";
+    public Uri getResourcePath() throws IOException {
+        String path = getResourcePathFolder();
+        String fileName = getFileName();
+        Uri result = new Uri(path + fileName);
+        return result;
+    }
+
+    public String getResourcePathFolder() {
+        return "";
     }
 
     protected String localizeReference(Uri pagePath, String ref) {
@@ -176,6 +195,10 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
                 }
             }
         }
+    }
+
+    public void setFileName(String fileName) {
+        fFileName = fileName;
     }
 
 }

@@ -143,18 +143,7 @@ public abstract class RemoteResourcePresenter extends Base
         return fResourceId;
     }
 
-    public Uri getResourcePath() throws IOException {
-        String type = getResourcePathFolder();
-        Uri uri = getResourceUrl();
-        String hash = getHash(uri);
-        String ext = fResource.getFileExtension();
-        Uri result = new Uri("OPS/" + type + "/" + hash + "." + ext);
-        return result;
-    }
-
-    protected String getResourcePathFolder() {
-        return "";
-    }
+    public abstract Uri getResourcePath() throws IOException;
 
     @Override
     public Uri getResourceUrl() {

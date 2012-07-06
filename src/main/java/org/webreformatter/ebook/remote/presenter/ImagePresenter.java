@@ -3,8 +3,8 @@
  */
 package org.webreformatter.ebook.remote.presenter;
 
-import org.webreformatter.ebook.remote.ISite;
 import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.ISite;
 
 /**
  * @author kotelnikov
@@ -16,8 +16,8 @@ public class ImagePresenter extends BinaryResourcePresenter {
     }
 
     @Override
-    protected String getResourcePathFolder() {
-        return "images";
+    public String getResourcePathFolder() {
+        return "images/";
     }
 
 }

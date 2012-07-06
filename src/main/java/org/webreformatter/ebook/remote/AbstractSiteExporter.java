@@ -70,6 +70,14 @@ public abstract class AbstractSiteExporter {
         });
         if (epubOutputFile.exists()) {
             File siteOutputDir = new File(getConfigValue("siteOutputDir"));
+            if (siteOutputDir.isDirectory()) {
+                File[] children = siteOutputDir.listFiles();
+                if (children != null) {
+                    for (File child : children) {
+                        IOUtil.delete(child);
+                    }
+                }
+            }
             unzip(epubOutputFile, siteOutputDir);
         }
     }
