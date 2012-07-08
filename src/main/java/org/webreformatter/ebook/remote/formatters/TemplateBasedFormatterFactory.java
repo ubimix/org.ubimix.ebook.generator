@@ -6,13 +6,18 @@ package org.webreformatter.ebook.remote.formatters;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.webreformatter.commons.json.JsonObject;
+import org.webreformatter.commons.json.ext.DateFormatter;
+import org.webreformatter.commons.json.ext.FormattedDate;
 import org.webreformatter.commons.templates.ITemplateProcessor;
 import org.webreformatter.commons.templates.ITemplateProvider;
 import org.webreformatter.commons.uri.Uri;
@@ -49,6 +54,35 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
 
         public String esc(String str) {
             return PageUtils.escapeXml(str);
+        }
+
+        public String formatDate(
+            FormattedDate date,
+            String template,
+            String locale) {
+            if (date == null) {
+                return null;
+            }
+            // DateFormatSymbols symbols = new DateFormatSymbols(new
+            // Locale(locale));
+            // String[] months = symbols.getMonths();
+            //
+            SimpleDateFormat format = new SimpleDateFormat(
+                template,
+                new Locale(locale));
+            format.setTimeZone(TimeZone.getTimeZone("PST"));
+            return format.format(DateFormatter.getDateTime(date));
+        }
+
+        public String formatDate(String date, String template, String locale) {
+            if (date == null) {
+                return null;
+            }
+            String result = formatDate(
+                new FormattedDate(date),
+                template,
+                locale);
+            return result;
         }
 
         public List<IBookTocItem> getChildren(IBookTocItem item) {

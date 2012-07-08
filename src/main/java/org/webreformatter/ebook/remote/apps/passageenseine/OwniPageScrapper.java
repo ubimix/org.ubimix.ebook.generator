@@ -80,20 +80,72 @@ public class OwniPageScrapper extends GenericPageScrapper {
 
         final XmlContext xmlContext = fContent.getXmlContext();
         XmlAcceptor.accept(fContent.getRootElement(), new XmlVisitor() {
-            protected void buildIframeMediaBox(
+            private boolean buildContextBoxes(XmlContext context, Element node)
+                throws XmlException {
+                boolean result = false;
+                String cls = node.getAttribute("class");
+                if (cls.equals("post insertPost cat-activisme")) {
+                    XmlWrapper w = context.wrap(node);
+                    String imgSrc = w.evalStr(".//html:img/@src");
+                    XmlWrapper titleTag = w
+                        .eval(".//html:h3[@class='entry_title']");
+                    String title = "";
+                    String url = w.evalStr(".//html:a/@href");
+                    if (titleTag != null) {
+                        title = titleTag.toText();
+                        url = titleTag.evalStr(".//html:a/@href");
+                    }
+                    XmlWrapper description = w
+                        .eval(".//html:div[@class='entry_texte']");
+                    if (description != null) {
+                        description = description.newCopy("html:div");
+                    }
+
+                    XmlWrapper mediaBox = null;
+                    if (imgSrc != null) {
+                        mediaBox = context.newXML("html:div");
+                        XmlWrapper a = mediaBox.appendElement("html:a");
+                        a.setAttribute("href", url);
+                        XmlWrapper img = a.appendElement("html:img");
+                        img.setAttribute("src", imgSrc);
+                    }
+                    XmlWrapper descriptionBox = null;
+                    if (description != null || title != null) {
+                        descriptionBox = context.newXML("html:div");
+                        if (title != null) {
+                            XmlWrapper h3 = descriptionBox
+                                .appendElement("html:h3");
+                            h3.appendText(title);
+                        }
+                        if (description != null) {
+                            descriptionBox.append(description);
+                        }
+                    }
+                    XmlWrapper box = wrapInMediaBox(w, mediaBox, descriptionBox);
+                    box.setAttribute(
+                        "class",
+                        "umx_media_box umx_sidebox umx_right");
+                    result = true;
+                }
+                return result;
+            }
+
+            protected boolean buildIframeMediaBox(
                 final XmlContext xmlContext,
                 Element node) throws XmlException {
                 XmlWrapper w = xmlContext.wrap(node);
                 String src = w.getAttribute("src");
                 if (src == null || !src.contains("player.vimeo.com")) {
-                    return;
+                    return false;
                 }
                 wrapInMediaBox(w);
+                return true;
             }
 
-            protected void buildMediaBox(
+            protected boolean buildMediaBox(
                 final XmlContext xmlContext,
                 Element node) throws XmlException {
+                boolean result = false;
                 String cls = node.getAttribute("class");
                 if (cls.contains("wp-caption")) {
                     XmlWrapper w = xmlContext.wrap(node);
@@ -115,30 +167,39 @@ public class OwniPageScrapper extends GenericPageScrapper {
                     if (captionText != null) {
                         captionText.copyTo(captionDiv);
                     }
+                    result = true;
                 }
+                return result;
             }
 
-            private void buildMediaBoxFromFullSizeImages(
+            private boolean buildMediaBoxFromFullSizeImages(
                 XmlContext xmlContext,
                 Element node) throws XmlException {
+                boolean result = false;
                 String cls = node.getAttribute("class");
                 if (cls.contains("size-full")) {
                     XmlWrapper w = xmlContext.wrap(node);
                     w.removeAttribute("class");
                     wrapInMediaBox(w);
+                    result = true;
                 }
+                return result;
             }
 
             @Override
             public void visit(Element node) {
+                boolean handled = false;
                 String name = XHTMLUtils.getHTMLName(node);
                 try {
                     if ("iframe".equals(name)) {
-                        buildIframeMediaBox(xmlContext, node);
+                        handled = buildIframeMediaBox(xmlContext, node);
                     } else if ("div".equals(name)) {
-                        buildMediaBox(xmlContext, node);
+                        handled = buildMediaBox(xmlContext, node)
+                            || buildContextBoxes(xmlContext, node);
                     } else if ("img".equals(name)) {
-                        buildMediaBoxFromFullSizeImages(xmlContext, node);
+                        handled = buildMediaBoxFromFullSizeImages(
+                            xmlContext,
+                            node);
                     }
                 } catch (Throwable t) {
                     throw RemoteResourcePresenter.onError(
@@ -149,14 +210,30 @@ public class OwniPageScrapper extends GenericPageScrapper {
                 super.visit(node);
             }
 
-            private void wrapInMediaBox(XmlWrapper w) throws XmlException {
+            private XmlWrapper wrapInMediaBox(XmlWrapper w) throws XmlException {
+                return wrapInMediaBox(w, w, null);
+            }
+
+            private XmlWrapper wrapInMediaBox(
+                XmlWrapper w,
+                XmlWrapper media,
+                XmlWrapper description) throws XmlException {
                 XmlWrapper parent = w.getParent();
                 XmlWrapper div = parent.appendElement("html:div");
-                parent.insertBefore(w, div);
                 div.setAttribute("class", "umx_media_box");
-                XmlWrapper mediaDiv = div.appendElement("html:div");
-                mediaDiv.setAttribute("class", "umx_media");
-                mediaDiv.append(w);
+                parent.insertBefore(w, div);
+                w.remove();
+                if (media != null) {
+                    XmlWrapper mediaDiv = div.appendElement("html:div");
+                    mediaDiv.setAttribute("class", "umx_media");
+                    mediaDiv.append(media);
+                }
+                if (description != null) {
+                    XmlWrapper mediaDiv = div.appendElement("html:div");
+                    mediaDiv.setAttribute("class", "umx_description");
+                    mediaDiv.append(description);
+                }
+                return div;
             }
 
         });
