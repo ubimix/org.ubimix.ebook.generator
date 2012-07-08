@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.w3c.dom.Element;
 import org.webreformatter.commons.json.ext.DateFormatter;
@@ -27,6 +28,9 @@ public class OwniPageScrapper extends GenericPageScrapper {
     private final static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
         "dd MMMMM yyyy",
         Locale.FRANCE);
+    static {
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
 
     private String fAuthorRef;
 
@@ -68,6 +72,7 @@ public class OwniPageScrapper extends GenericPageScrapper {
                 try {
                     Date date = DATE_FORMAT.parse(str);
                     fDate = DateFormatter.formatDate(date);
+                    fDate.setHour(12);
                 } catch (ParseException e) {
                 }
             }
@@ -86,45 +91,51 @@ public class OwniPageScrapper extends GenericPageScrapper {
                 String cls = node.getAttribute("class");
                 if (cls.equals("post insertPost cat-activisme")) {
                     XmlWrapper w = context.wrap(node);
-                    String imgSrc = w.evalStr(".//html:img/@src");
-                    XmlWrapper titleTag = w
-                        .eval(".//html:h3[@class='entry_title']");
-                    String title = "";
-                    String url = w.evalStr(".//html:a/@href");
-                    if (titleTag != null) {
-                        title = titleTag.toText();
-                        url = titleTag.evalStr(".//html:a/@href");
-                    }
-                    XmlWrapper description = w
-                        .eval(".//html:div[@class='entry_texte']");
-                    if (description != null) {
-                        description = description.newCopy("html:div");
-                    }
-
-                    XmlWrapper mediaBox = null;
-                    if (imgSrc != null) {
-                        mediaBox = context.newXML("html:div");
-                        XmlWrapper a = mediaBox.appendElement("html:a");
-                        a.setAttribute("href", url);
-                        XmlWrapper img = a.appendElement("html:img");
-                        img.setAttribute("src", imgSrc);
-                    }
-                    XmlWrapper descriptionBox = null;
-                    if (description != null || title != null) {
-                        descriptionBox = context.newXML("html:div");
-                        if (title != null) {
-                            XmlWrapper h3 = descriptionBox
-                                .appendElement("html:h3");
-                            h3.appendText(title);
+                    w.remove();
+                    if (result) { // Never visited
+                        String imgSrc = w.evalStr(".//html:img/@src");
+                        XmlWrapper titleTag = w
+                            .eval(".//html:h3[@class='entry_title']");
+                        String title = "";
+                        String url = w.evalStr(".//html:a/@href");
+                        if (titleTag != null) {
+                            title = titleTag.toText();
+                            url = titleTag.evalStr(".//html:a/@href");
                         }
+                        XmlWrapper description = w
+                            .eval(".//html:div[@class='entry_texte']");
                         if (description != null) {
-                            descriptionBox.append(description);
+                            description = description.newCopy("html:div");
                         }
+
+                        XmlWrapper mediaBox = null;
+                        if (imgSrc != null) {
+                            mediaBox = context.newXML("html:div");
+                            XmlWrapper a = mediaBox.appendElement("html:a");
+                            a.setAttribute("href", url);
+                            XmlWrapper img = a.appendElement("html:img");
+                            img.setAttribute("src", imgSrc);
+                        }
+                        XmlWrapper descriptionBox = null;
+                        if (description != null || title != null) {
+                            descriptionBox = context.newXML("html:div");
+                            if (title != null) {
+                                XmlWrapper h3 = descriptionBox
+                                    .appendElement("html:h3");
+                                h3.appendText(title);
+                            }
+                            if (description != null) {
+                                descriptionBox.append(description);
+                            }
+                        }
+                        XmlWrapper box = wrapInMediaBox(
+                            w,
+                            mediaBox,
+                            descriptionBox);
+                        box.setAttribute(
+                            "class",
+                            "umx_media_box umx_sidebox umx_right");
                     }
-                    XmlWrapper box = wrapInMediaBox(w, mediaBox, descriptionBox);
-                    box.setAttribute(
-                        "class",
-                        "umx_media_box umx_sidebox umx_right");
                     result = true;
                 }
                 return result;
@@ -207,7 +218,9 @@ public class OwniPageScrapper extends GenericPageScrapper {
                         "Can not transform a media box.",
                         t);
                 }
-                super.visit(node);
+                if (!handled) {
+                    super.visit(node);
+                }
             }
 
             private XmlWrapper wrapInMediaBox(XmlWrapper w) throws XmlException {
