@@ -85,141 +85,157 @@ public class OwniPageScrapper extends GenericPageScrapper {
 
         final XmlContext xmlContext = fContent.getXmlContext();
         XmlAcceptor.accept(fContent.getRootElement(), new XmlVisitor() {
-            private boolean buildContextBoxes(XmlContext context, Element node)
-                throws XmlException {
-                boolean result = false;
-                String cls = node.getAttribute("class");
-                if (cls.equals("post insertPost cat-activisme")) {
-                    XmlWrapper w = context.wrap(node);
-                    w.remove();
-                    if (result) { // Never visited
-                        String imgSrc = w.evalStr(".//html:img/@src");
-                        XmlWrapper titleTag = w
-                            .eval(".//html:h3[@class='entry_title']");
-                        String title = "";
-                        String url = w.evalStr(".//html:a/@href");
-                        if (titleTag != null) {
-                            title = titleTag.toText();
-                            url = titleTag.evalStr(".//html:a/@href");
-                        }
-                        XmlWrapper description = w
-                            .eval(".//html:div[@class='entry_texte']");
-                        if (description != null) {
-                            description = description.newCopy("html:div");
-                        }
-
-                        XmlWrapper mediaBox = null;
-                        if (imgSrc != null) {
-                            mediaBox = context.newXML("html:div");
-                            XmlWrapper a = mediaBox.appendElement("html:a");
-                            a.setAttribute("href", url);
-                            XmlWrapper img = a.appendElement("html:img");
-                            img.setAttribute("src", imgSrc);
-                        }
-                        XmlWrapper descriptionBox = null;
-                        if (description != null || title != null) {
-                            descriptionBox = context.newXML("html:div");
-                            if (title != null) {
-                                XmlWrapper h3 = descriptionBox
-                                    .appendElement("html:h3");
-                                h3.appendText(title);
-                            }
-                            if (description != null) {
-                                descriptionBox.append(description);
-                            }
-                        }
-                        XmlWrapper box = wrapInMediaBox(
-                            w,
-                            mediaBox,
-                            descriptionBox);
-                        box.setAttribute(
-                            "class",
-                            "umx_media_box umx_sidebox umx_right");
-                    }
-                    result = true;
+            private boolean buildContextBoxes(
+                XmlContext context,
+                Element node,
+                String name) throws XmlException {
+                if (!"div".equals(name)) {
+                    return false;
                 }
-                return result;
+                String cls = node.getAttribute("class");
+                if (!cls.equals("post insertPost cat-activisme")) {
+                    return false;
+                }
+                boolean visit = false;
+                XmlWrapper w = context.wrap(node);
+                if (!visit) {
+                    w.remove();
+                } else {// Never visited
+                    String imgSrc = w.evalStr(".//html:img/@src");
+                    XmlWrapper titleTag = w
+                        .eval(".//html:h3[@class='entry_title']");
+                    String title = "";
+                    String url = w.evalStr(".//html:a/@href");
+                    if (titleTag != null) {
+                        title = titleTag.toText();
+                        url = titleTag.evalStr(".//html:a/@href");
+                    }
+                    XmlWrapper description = w
+                        .eval(".//html:div[@class='entry_texte']");
+                    if (description != null) {
+                        description = description.newCopy("html:div");
+                    }
+                    XmlWrapper mediaBox = null;
+                    if (imgSrc != null) {
+                        mediaBox = context.newXML("html:div");
+                        XmlWrapper a = mediaBox.appendElement("html:a");
+                        a.setAttribute("href", url);
+                        XmlWrapper img = a.appendElement("html:img");
+                        img.setAttribute("src", imgSrc);
+                    }
+                    XmlWrapper descriptionBox = null;
+                    if (description != null || title != null) {
+                        descriptionBox = context.newXML("html:div");
+                        if (title != null) {
+                            XmlWrapper h3 = descriptionBox
+                                .appendElement("html:h3");
+                            h3.appendText(title);
+                        }
+                        if (description != null) {
+                            descriptionBox.append(description);
+                        }
+                    }
+                    XmlWrapper box = wrapInMediaBox(w, mediaBox, descriptionBox);
+                    box.setAttribute(
+                        "class",
+                        "umx_media_box umx_sidebox umx_right");
+                }
+                return true;
             }
 
-            protected boolean buildIframeMediaBox(
+            private boolean buildIframeMediaBox(
                 final XmlContext xmlContext,
-                Element node) throws XmlException {
+                Element node,
+                String name) throws XmlException {
+                if (!"iframe".equals(name)) {
+                    return false;
+                }
                 XmlWrapper w = xmlContext.wrap(node);
                 String src = w.getAttribute("src");
                 if (src == null || !src.contains("player.vimeo.com")) {
                     return false;
                 }
                 wrapInMediaBox(w);
+                w.setAttribute("width", "100%");
                 return true;
             }
 
             protected boolean buildMediaBox(
                 final XmlContext xmlContext,
-                Element node) throws XmlException {
-                boolean result = false;
-                String cls = node.getAttribute("class");
-                if (cls.contains("wp-caption")) {
-                    XmlWrapper w = xmlContext.wrap(node);
-                    w.removeAttribute("class");
-                    w.removeAttribute("style");
-                    w.removeAttribute("id");
-                    w.setAttribute("class", "umx_media_box");
-                    XmlWrapper img = w.eval(".//html:img");
-                    XmlWrapper captionText = w
-                        .eval(".//*[@class='wp-caption-text']");
-                    w.removeChildren();
-                    XmlWrapper mediaDiv = w.appendElement("html:div");
-                    mediaDiv.setAttribute("class", "umx_media");
-                    if (img != null) {
-                        mediaDiv.append(img);
-                    }
-                    XmlWrapper captionDiv = w.appendElement("html:div");
-                    captionDiv.setAttribute("class", "umx_description");
-                    if (captionText != null) {
-                        captionText.copyTo(captionDiv);
-                    }
-                    result = true;
+                Element node,
+                String name) throws XmlException {
+                if (!"div".equals(name)) {
+                    return false;
                 }
-                return result;
+                String cls = node.getAttribute("class");
+                if (!cls.contains("wp-caption")) {
+                    return false;
+                }
+                XmlWrapper w = xmlContext.wrap(node);
+                w.removeAttribute("class");
+                w.removeAttribute("style");
+                w.removeAttribute("id");
+                w.setAttribute("class", "umx_media_box");
+                XmlWrapper img = w.eval(".//html:img");
+                XmlWrapper captionText = w
+                    .eval(".//*[@class='wp-caption-text']");
+                w.removeChildren();
+                XmlWrapper mediaDiv = w.appendElement("html:div");
+                mediaDiv.setAttribute("class", "umx_media");
+                if (img != null) {
+                    clearImageAttributes(img);
+                    mediaDiv.append(img);
+                }
+                XmlWrapper captionDiv = w.appendElement("html:div");
+                captionDiv.setAttribute("class", "umx_description");
+                if (captionText != null) {
+                    captionText.copyTo(captionDiv);
+                }
+                return true;
             }
 
             private boolean buildMediaBoxFromFullSizeImages(
                 XmlContext xmlContext,
-                Element node) throws XmlException {
-                boolean result = false;
-                String cls = node.getAttribute("class");
-                if (cls.contains("size-full")) {
-                    XmlWrapper w = xmlContext.wrap(node);
-                    w.removeAttribute("class");
-                    wrapInMediaBox(w);
-                    result = true;
+                Element node,
+                String name) throws XmlException {
+                if (!"img".equals(name)) {
+                    return false;
                 }
-                return result;
+                String cls = node.getAttribute("class");
+                if (!cls.contains("size-full")) {
+                    return false;
+                }
+                XmlWrapper w = xmlContext.wrap(node);
+                clearImageAttributes(w);
+                wrapInMediaBox(w);
+                return true;
+            }
+
+            private void clearImageAttributes(XmlWrapper img) {
+                img.removeAttribute("width");
+                img.removeAttribute("height");
+                img.removeAttribute("class");
             }
 
             @Override
             public void visit(Element node) {
                 boolean handled = false;
-                String name = XHTMLUtils.getHTMLName(node);
                 try {
-                    if ("iframe".equals(name)) {
-                        handled = buildIframeMediaBox(xmlContext, node);
-                    } else if ("div".equals(name)) {
-                        handled = buildMediaBox(xmlContext, node)
-                            || buildContextBoxes(xmlContext, node);
-                    } else if ("img".equals(name)) {
-                        handled = buildMediaBoxFromFullSizeImages(
+                    String name = XHTMLUtils.getHTMLName(node);
+                    handled = buildIframeMediaBox(xmlContext, node, name)
+                        || buildContextBoxes(xmlContext, node, name)
+                        || buildMediaBoxFromFullSizeImages(
                             xmlContext,
-                            node);
+                            node,
+                            name) || buildMediaBox(xmlContext, node, name);
+                    if (!handled) {
+                        super.visit(node);
                     }
                 } catch (Throwable t) {
                     throw RemoteResourcePresenter.onError(
                         RuntimeException.class,
                         "Can not transform a media box.",
                         t);
-                }
-                if (!handled) {
-                    super.visit(node);
                 }
             }
 
