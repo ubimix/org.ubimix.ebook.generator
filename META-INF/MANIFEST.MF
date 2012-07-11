@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: org.webreformatter.ebook.generator
 Bundle-SymbolicName: org.webreformatter.ebook
-Bundle-Version: 0.1.5
+Bundle-Version: 0.9.0
 Import-Package: javax.servlet;version="2.5.0",
  javax.servlet.http;version="2.5.0",
  javax.xml.namespace,
@@ -47,6 +47,6 @@ Import-Package: javax.servlet;version="2.5.0",
  org.webreformatter.scrapper.utils,
  org.webreformatter.server.encoding,
  org.webreformatter.server.mime
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Bundle-Activator: org.webreformatter.scrapper.example.Activator
