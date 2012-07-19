@@ -13,7 +13,7 @@ import org.webreformatter.ebook.bom.IBookToc.IBookTocItem;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
 import org.webreformatter.ebook.bom.json.JsonBookToc;
 import org.webreformatter.ebook.io.IOutput;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.ebook.remote.presenter.IContentPresenter;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
 import org.webreformatter.ebook.remote.presenter.IndexPagePresenter;
@@ -99,7 +99,7 @@ public class MinisiteFormatterFactory implements IFormatterFactory {
             throws IOException,
             XmlException {
             IndexPagePresenter indexPresenter = null;
-            ISite provider = fPresenter.getSite();
+            Site provider = fPresenter.getSite();
             Uri indexUrl = provider.getSiteUrl();
             IPresenter presenter = getPresenter(indexUrl, true);
             if (presenter instanceof IndexPagePresenter) {

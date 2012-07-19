@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.ebook.remote.presenter.Base;
 import org.webreformatter.ebook.remote.presenter.IContentPresenter;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
@@ -36,7 +36,7 @@ public abstract class AbstractPageFormatter extends Base
     public void appendScripts(final StringBuilder buf, List<Uri> urls)
         throws IOException,
         XmlException {
-        ISite site = fPresenter.getSite();
+        Site site = fPresenter.getSite();
         for (Uri url : urls) {
             IPresenter presenter = site.getPresenterManager().getPresenter(
                 url,
@@ -69,7 +69,7 @@ public abstract class AbstractPageFormatter extends Base
     }
 
     @Override
-    protected ISite getSite() {
+    protected Site getSite() {
         return fPresenter.getSite();
     }
 

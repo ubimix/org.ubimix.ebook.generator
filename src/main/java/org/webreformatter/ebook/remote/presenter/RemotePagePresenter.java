@@ -11,44 +11,13 @@ import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.XmlWrapper.CompositeNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.SimpleNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 
 /**
  * @author kotelnikov
  */
 public abstract class RemotePagePresenter extends RemoteResourcePresenter {
-
-    /**
-     * @author kotelnikov
-     */
-    public interface IUrlProvider {
-
-        Uri getImageUri(Uri parentUri, Uri resourceUri);
-
-        Uri getResourceUri(Uri parentUri, Uri resourceUri);
-
-    }
-
-    public static abstract class UrlProvider implements IUrlProvider {
-
-        @Override
-        public Uri getImageUri(Uri parentUri, Uri resourceUri) {
-            resourceUri = getNormalizedDownloadUri(parentUri, resourceUri);
-            return resourceUri;
-        }
-
-        protected Uri getNormalizedDownloadUri(Uri parentUri, Uri resourceUri) {
-            Uri.Builder builder = resourceUri.getBuilder().setFragment(null);
-            String scheme = builder.getScheme();
-            if (parentUri != null && builder.hasAuthority() && scheme == null) {
-                builder.setScheme(parentUri.getScheme());
-            }
-            resourceUri = builder.build();
-            return resourceUri;
-        }
-
-    }
 
     public static final String _NS_XHTML = "http://www.w3.org/1999/xhtml";
 
@@ -83,14 +52,11 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
 
     private XmlWrapper fPage;
 
-    protected IUrlProvider fUrlProvider;
-
     public RemotePagePresenter(
-        ISite site,
+        Site site,
         RemoteResource resource,
-        IUrlProvider urlProvider) throws IOException, XmlException {
-        super(site, resource);
-        fUrlProvider = urlProvider;
+        Uri resourceUri) throws IOException, XmlException {
+        super(site, resource, resourceUri);
     }
 
     protected String getFileName() throws IOException {
@@ -186,9 +152,9 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
             String ref = reference.getAttribute(param);
             Uri uri = getResolved(ref, true);
             if (uri != null) {
-                Uri newUri = image
-                    ? fUrlProvider.getImageUri(parentUri, uri)
-                    : fUrlProvider.getResourceUri(parentUri, uri);
+                Site site = getSite();
+                Uri newUri = image ? site.getImageUri(parentUri, uri) : site
+                    .getResourceUri(parentUri, uri);
                 boolean excluded = false;
                 if (newUri != null) {
                     uri = newUri;

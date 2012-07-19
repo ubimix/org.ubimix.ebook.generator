@@ -9,7 +9,7 @@ import org.webreformatter.ebook.io.IInput;
 import org.webreformatter.ebook.io.IOutput;
 import org.webreformatter.ebook.io.InOutUtil;
 import org.webreformatter.ebook.io.server.StreamToInput;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
 
 /**
  * @author kotelnikov

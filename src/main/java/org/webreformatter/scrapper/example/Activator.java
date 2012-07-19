@@ -12,15 +12,11 @@ import org.webreformatter.commons.osgi.OSGIService;
 import org.webreformatter.commons.strings.StringUtil;
 import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.xml.XmlException;
-import org.webreformatter.scrapper.core.AppContext;
-import org.webreformatter.scrapper.core.AppContextConfigurator;
 
 /**
  * @author kotelnikov
  */
 public class Activator extends ConfigurableMultiserviceActivator {
-
-    private AppContext fAppContext;
 
     private EPubGeneratorServlet fEPubServlet;
 
@@ -37,8 +33,7 @@ public class Activator extends ConfigurableMultiserviceActivator {
 
     @OSGIObjectActivator
     public void activate() throws IOException, XmlException {
-        fAppContext = AppContextConfigurator.createAppContext(fProperyProvider);
-        fEPubServlet = new EPubGeneratorServlet(fAppContext);
+        fEPubServlet = new EPubGeneratorServlet(fProperyProvider);
     }
 
     @OSGIObjectDeactivator

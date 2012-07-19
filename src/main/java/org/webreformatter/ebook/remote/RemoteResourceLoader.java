@@ -1,66 +1,97 @@
 package org.webreformatter.ebook.remote;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.webreformatter.commons.io.IOUtil;
 import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
+import org.webreformatter.commons.uri.Path;
 import org.webreformatter.commons.uri.Uri;
+import org.webreformatter.commons.uri.UriToPath;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.XmlWrapper.CompositeNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.SimpleNamespaceContext;
 import org.webreformatter.commons.xml.XmlWrapper.XmlContext;
 import org.webreformatter.resources.IContentAdapter;
+import org.webreformatter.resources.IWrfRepository;
 import org.webreformatter.resources.IWrfResource;
+import org.webreformatter.resources.IWrfResourceProvider;
+import org.webreformatter.resources.adapters.cache.CachedResourceAdapter;
 import org.webreformatter.resources.adapters.html.HTMLAdapter;
 import org.webreformatter.resources.adapters.mime.MimeTypeAdapter;
-import org.webreformatter.scrapper.core.AppContext;
-import org.webreformatter.scrapper.core.AppContextConfigurator;
-import org.webreformatter.scrapper.core.DownloadAdapter;
+import org.webreformatter.resources.impl.WrfResourceRepository;
+import org.webreformatter.scrapper.app.AbstractConfig;
+import org.webreformatter.scrapper.core.AccessConfig;
+import org.webreformatter.scrapper.core.IAccessConfig.ICredentials;
+import org.webreformatter.scrapper.protocol.AccessManager;
+import org.webreformatter.scrapper.protocol.AccessManager.CredentialInfo;
+import org.webreformatter.scrapper.protocol.CompositeProtocolHandler;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
+import org.webreformatter.scrapper.protocol.ProtocolHandlerUtils;
 
 /**
  * @author kotelnikov
  */
-public class RemoteResourceLoader implements IRemoteResourceLoader {
+public class RemoteResourceLoader extends AbstractConfig {
 
     /**
      * @author kotelnikov
      */
-    public static class PersistentResource extends RemoteResource {
+    public static class RemoteResource {
 
-        private AppContext fContext;
+        private HttpStatusCode fDownloadStatus;
+
+        private XmlWrapper fHtmlPage;
+
+        private String fMimeType;
 
         private IWrfResource fResource;
 
+        private RemoteResourceLoader fResourceLoader;
+
+        private Uri fUri;
+
         private XmlContext fXmlContext;
 
-        public PersistentResource(
-            AppContext appContext,
+        public RemoteResource(
+            RemoteResourceLoader loader,
             XmlContext xmlContext,
             Uri uri) {
-            super(uri);
+            fUri = uri;
+            fResourceLoader = loader;
             fXmlContext = xmlContext;
-            fContext = appContext;
         }
 
-        @Override
+        public RemoteResource(Uri uri) {
+            fUri = uri;
+        }
+
         protected void clean() {
-            super.clean();
+            fMimeType = null;
+            fDownloadStatus = null;
             fResource = null;
         }
 
-        @Override
-        protected HttpStatusCode doDownload() throws IOException {
-            IWrfResource resource = getWrfResource();
-            DownloadAdapter downloadAdapter = fContext
-                .getAdapter(DownloadAdapter.class);
-            return downloadAdapter.loadResource(getUri(), resource);
+        public HttpStatusCode download(boolean reload) throws IOException {
+            if (fDownloadStatus == null || reload) {
+                clean();
+                IWrfResource resource = getWrfResource();
+                Uri uri = getUri();
+                fDownloadStatus = fResourceLoader.loadResource(
+                    uri,
+                    resource,
+                    reload);
+            }
+            return fDownloadStatus;
         }
 
-        @Override
         public InputStream getContent() throws IOException {
             IWrfResource resource = getWrfResource();
             IContentAdapter content = resource
@@ -68,26 +99,67 @@ public class RemoteResourceLoader implements IRemoteResourceLoader {
             return content.getContentInput();
         }
 
+        public String getFileExtension() throws IOException {
+            String mimeType = getMimeType();
+            String extension = getUri().getPath().getFileExtension();
+            if (extension == null) {
+                final String imagePrefix = "image/";
+                if (mimeType.startsWith(imagePrefix)) {
+                    extension = mimeType.substring(imagePrefix.length());
+                } else if (isHtmlPage()) {
+                    extension = "html";
+                } else {
+                    extension = "bin";
+                }
+            }
+            return extension;
+        }
+
+        public XmlWrapper getHtmlPage() throws IOException, XmlException {
+            if (fHtmlPage == null) {
+                download(false);
+                fHtmlPage = loadContentAsHtml();
+            }
+            return fHtmlPage;
+        }
+
+        public String getMimeType() throws IOException {
+            if (fMimeType == null) {
+                download(false);
+                fMimeType = loadMimeType();
+            }
+            return fMimeType;
+        }
+
+        public HttpStatusCode getStatus() throws IOException {
+            download(false);
+            return fDownloadStatus;
+        }
+
+        public Uri getUri() {
+            return fUri;
+        }
+
         private IWrfResource getWrfResource() {
             if (fResource == null) {
-                fResource = fContext.getResource("download", getUri());
+                fResource = fResourceLoader.getResource(
+                    "download",
+                    getUri(),
+                    null);
             }
             return fResource;
         }
 
-        @Override
         public boolean isHtmlPage() throws IOException {
             String mimeType = getMimeType();
             return mimeType != null && mimeType.startsWith("text/html");
         }
 
-        @Override
         public boolean isImage() throws IOException {
             String mimeType = getMimeType();
             return mimeType != null && mimeType.startsWith("image/");
         }
 
-        @Override
         protected XmlWrapper loadContentAsHtml()
             throws IOException,
             XmlException {
@@ -97,13 +169,13 @@ public class RemoteResourceLoader implements IRemoteResourceLoader {
             return fXmlContext.wrap(xml.getRoot()).createCopy();
         }
 
-        @Override
         protected String loadMimeType() throws IOException {
             IWrfResource resource = getWrfResource();
             MimeTypeAdapter mimeAdapter = resource
                 .getAdapter(MimeTypeAdapter.class);
             return mimeAdapter.getMimeType();
         }
+
     }
 
     public static final String _NS_XHTML = "http://www.w3.org/1999/xhtml";
@@ -126,44 +198,143 @@ public class RemoteResourceLoader implements IRemoteResourceLoader {
         return xmlContext;
     }
 
-    private AppContext fContext;
+    private AccessManager fAccessManager = new AccessManager();
 
-    private Map<Uri, RemoteResourceLoader.PersistentResource> fResources = new HashMap<Uri, RemoteResourceLoader.PersistentResource>();
+    private CompositeProtocolHandler fProtocolHandler = new CompositeProtocolHandler();
+
+    private IWrfRepository fResourceRepository;
+
+    private Map<Uri, RemoteResource> fResources = new HashMap<Uri, RemoteResource>();
 
     private XmlContext fXmlContext;
 
-    public RemoteResourceLoader(AppContext appContext) {
-        this(appContext, newXmlContext());
-    }
-
-    public RemoteResourceLoader(AppContext appContext, XmlContext xmlContext) {
-        fContext = appContext;
-        fXmlContext = xmlContext;
-    }
-
     public RemoteResourceLoader(IVariableProvider propertyProvider)
         throws IOException {
-        this(AppContextConfigurator.createAppContext(propertyProvider));
+        this(propertyProvider, null, newXmlContext());
+        ProtocolHandlerUtils.registerDefaultProtocols(fProtocolHandler);
     }
 
-    public RemoteResourceLoader.PersistentResource download(Uri indexUri)
-        throws IOException {
-        RemoteResourceLoader.PersistentResource resource = getResource(
-            indexUri,
-            true);
+    public RemoteResourceLoader(
+        IVariableProvider propertyProvider,
+        IWrfRepository repository,
+        XmlContext xmlContext) throws IOException {
+        super(propertyProvider);
+        fResourceRepository = repository != null
+            ? repository
+            : newResourceRepository();
+        fXmlContext = xmlContext;
+        initCredentials();
+    }
+
+    /**
+     * This method is used to associate credentials with all resources starting
+     * with the specified base URL.
+     * 
+     * @param baseUrl the basic URL associated with the specified credentials
+     * @param login the login used to access resources
+     * @param pwd the password associated with the specified login
+     */
+    public void addCredentials(Uri baseUrl, String login, String pwd) {
+        fAccessManager.setCredentials(baseUrl, new CredentialInfo(login, pwd));
+    }
+
+    public RemoteResource download(Uri indexUri) throws IOException {
+        RemoteResource resource = getResource(indexUri, true);
         resource.download(false);
         return resource;
     }
 
-    @Override
-    public RemoteResourceLoader.PersistentResource getResource(
-        Uri uri,
-        boolean create) {
-        RemoteResourceLoader.PersistentResource resource = fResources.get(uri);
+    private IWrfResource getResource(String storeName, Uri url, String suffix) {
+        IWrfResourceProvider store = fResourceRepository.getResourceProvider(
+            storeName,
+            true);
+        // Transform the full URL into a path
+        Path targetResultPath = UriToPath.getPath(url);
+        if (suffix != null) {
+            Path.Builder pathBuilder = targetResultPath.getBuilder();
+            pathBuilder.appendPath("$").appendPath(suffix);
+            targetResultPath = pathBuilder.build();
+        }
+        IWrfResource targetResource = store.getResource(targetResultPath, true);
+        return targetResource;
+    }
+
+    public RemoteResource getResource(Uri uri, boolean create) {
+        RemoteResource resource = fResources.get(uri);
         if (resource == null && create) {
-            resource = new PersistentResource(fContext, fXmlContext, uri);
+            resource = new RemoteResource(this, fXmlContext, uri);
             fResources.put(uri, resource);
         }
         return resource;
+    }
+
+    protected void initCredentials() throws IOException {
+        String accessConfigFileName = getConfigString(
+            "accessConfig",
+            "./config/access.json");
+        if (accessConfigFileName != null) {
+            File configFile = new File(accessConfigFileName);
+            String serializedConfig = IOUtil.readString(configFile);
+            AccessConfig accessConfig = AccessConfig.FACTORY
+                .newValue(serializedConfig);
+            final Set<Uri> internalUrls = new HashSet<Uri>();
+            List<ICredentials> credentials = accessConfig.getCredentials();
+            for (ICredentials credential : credentials) {
+                Uri url = credential.getBaseDomain();
+                internalUrls.add(url);
+                addCredentials(
+                    url,
+                    credential.getLogin(),
+                    credential.getPassword());
+            }
+        }
+    }
+
+    private HttpStatusCode loadResource(
+        Uri url,
+        IWrfResource resource,
+        boolean reload) throws IOException {
+        HttpStatusCode statusCode = HttpStatusCode.STATUS_404;
+        if (url != null) {
+            boolean download = reload
+                || !resource.getAdapter(IContentAdapter.class).exists();
+            CachedResourceAdapter cacheAdapter = resource
+                .getAdapter(CachedResourceAdapter.class);
+            if (!download) {
+                int code = cacheAdapter.getStatusCode();
+                statusCode = HttpStatusCode.getStatusCode(code);
+            } else if (!cacheAdapter.isExpired()) {
+                statusCode = HttpStatusCode.STATUS_304; /* NOT_MODIFIED */
+            } else {
+                CredentialInfo credentials = fAccessManager != null
+                    ? fAccessManager.getCredentials(url)
+                    : null;
+                String login = null;
+                String password = null;
+                if (credentials != null) {
+                    login = credentials.getLogin();
+                    password = credentials.getPassword();
+                }
+                statusCode = fProtocolHandler.handleRequest(
+                    url,
+                    login,
+                    password,
+                    resource);
+                cacheAdapter.setStatusCode(statusCode.getStatusCode());
+            }
+        }
+        return statusCode;
+    }
+
+    protected IWrfRepository newResourceRepository() {
+        String repositoryPath = getConfigString(
+            "repositoryPath",
+            "${workdir}/.data");
+        boolean reset = getConfigBoolean("resetRepository", false);
+        IWrfRepository repository = WrfResourceRepository.newRepository(
+            new File(repositoryPath),
+            reset);
+        return repository;
+
     }
 }

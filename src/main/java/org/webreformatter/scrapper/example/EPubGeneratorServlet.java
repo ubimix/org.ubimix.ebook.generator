@@ -13,12 +13,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.webreformatter.commons.io.IOUtil;
+import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.ebook.remote.RemoteResourceLoader;
-import org.webreformatter.ebook.remote.RemoteResourceLoader.PersistentResource;
-import org.webreformatter.scrapper.core.AppContext;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
 
 /**
@@ -28,13 +28,13 @@ public class EPubGeneratorServlet extends HttpServlet {
 
     private static final long serialVersionUID = 6699363449276222571L;
 
-    private AppContext fContext;
+    private IVariableProvider fPropertiesProvider;
 
     /**
      * 
      */
-    public EPubGeneratorServlet(AppContext context) {
-        fContext = context;
+    public EPubGeneratorServlet(IVariableProvider propertiesProvider) {
+        fPropertiesProvider = propertiesProvider;
     }
 
     @Override
@@ -49,9 +49,10 @@ public class EPubGeneratorServlet extends HttpServlet {
             // return;
         }
 
-        RemoteResourceLoader reader = new RemoteResourceLoader(fContext);
+        RemoteResourceLoader reader = new RemoteResourceLoader(
+            fPropertiesProvider);
         Uri uri = new Uri(indexUrl);
-        PersistentResource r = reader.download(uri);
+        RemoteResource r = reader.download(uri);
         HttpStatusCode status = r.getStatus();
         if (status.isOkOrNotModified()) {
             String mimeType = r.getMimeType();

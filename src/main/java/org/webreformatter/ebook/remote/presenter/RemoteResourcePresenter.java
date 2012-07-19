@@ -9,8 +9,8 @@ import org.webreformatter.commons.digests.Sha1Digest;
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.ebook.BookId;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 
 /**
  * @author kotelnikov
@@ -65,12 +65,18 @@ public abstract class RemoteResourcePresenter extends Base
 
     private BookId fResourceId;
 
-    private ISite fSite;
+    private Uri fResourceUri;
 
-    public RemoteResourcePresenter(ISite site, RemoteResource resource) {
+    private Site fSite;
+
+    public RemoteResourcePresenter(
+        Site site,
+        RemoteResource resource,
+        Uri resourceUri) {
         super();
         fSite = site;
         fResource = resource;
+        fResourceUri = resourceUri;
     }
 
     protected String getHash(Uri url) {
@@ -147,11 +153,11 @@ public abstract class RemoteResourcePresenter extends Base
 
     @Override
     public Uri getResourceUrl() {
-        return fResource.getUri();
+        return fResourceUri;
     }
 
     @Override
-    public ISite getSite() {
+    public Site getSite() {
         return fSite;
     }
 

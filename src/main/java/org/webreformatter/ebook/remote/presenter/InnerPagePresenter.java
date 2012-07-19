@@ -24,8 +24,8 @@ import org.webreformatter.commons.xml.XmlWrapper;
 import org.webreformatter.commons.xml.html.HtmlBurner;
 import org.webreformatter.commons.xml.html.TagDictionary;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.ebook.remote.formatters.IFormatter;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 import org.webreformatter.scrapper.utils.HtmlPropertiesExtractor.IPropertyListener;
@@ -63,10 +63,10 @@ public class InnerPagePresenter extends RemotePagePresenter
     private JsonBookSection fSection;
 
     public InnerPagePresenter(
-        ISite site,
+        Site site,
         RemoteResource resource,
-        IUrlProvider urlProvider) throws IOException, XmlException {
-        super(site, resource, urlProvider);
+        Uri resourceUri) throws IOException, XmlException {
+        super(site, resource, resourceUri);
         fScrapper = newScrapper(this, IInnerPageScrapper.class);
     }
 

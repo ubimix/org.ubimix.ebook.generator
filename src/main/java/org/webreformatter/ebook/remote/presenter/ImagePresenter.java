@@ -3,16 +3,17 @@
  */
 package org.webreformatter.ebook.remote.presenter;
 
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.ISite;
+import org.webreformatter.commons.uri.Uri;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 
 /**
  * @author kotelnikov
  */
 public class ImagePresenter extends BinaryResourcePresenter {
 
-    public ImagePresenter(ISite site, RemoteResource resource) {
-        super(site, resource);
+    public ImagePresenter(Site site, RemoteResource resource, Uri resourceUri) {
+        super(site, resource, resourceUri);
     }
 
     @Override

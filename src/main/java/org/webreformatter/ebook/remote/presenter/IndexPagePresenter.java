@@ -20,8 +20,8 @@ import org.webreformatter.ebook.bom.IBookToc.IBookTocItem;
 import org.webreformatter.ebook.bom.json.JsonBookMeta;
 import org.webreformatter.ebook.bom.json.JsonBookToc;
 import org.webreformatter.ebook.bom.json.JsonBookToc.JsonBookTocItem;
-import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 
 /**
@@ -53,10 +53,10 @@ public class IndexPagePresenter extends RemotePagePresenter {
     private XmlWrapper fTocElement;
 
     public IndexPagePresenter(
-        ISite site,
+        Site site,
         RemoteResource resource,
-        IUrlProvider urlProvider) throws IOException, XmlException {
-        super(site, resource, urlProvider);
+        Uri resourceUri) throws IOException, XmlException {
+        super(site, resource, resourceUri);
         fScrapper = newScrapper(this, IIndexPageScrapper.class);
     }
 

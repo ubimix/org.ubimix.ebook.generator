@@ -23,7 +23,7 @@ import org.webreformatter.ebook.bom.epub.EPubGenerator;
 /**
  * @author kotelnikov
  */
-public abstract class AbstractSiteExporter {
+public class SiteExporter {
 
     private static Map<String, String> getConfigMap(String... args) {
         Map<String, String> map = new HashMap<String, String>();
@@ -37,7 +37,7 @@ public abstract class AbstractSiteExporter {
 
     private IVariableProvider fPropertyProvider;
 
-    public AbstractSiteExporter(String... args) throws IOException {
+    public SiteExporter(String... args) throws IOException {
         final Map<String, String> configMap = getConfigMap(args);
         File configFile = new File("./config/app.json");
         String config = IOUtil.readString(configFile);
@@ -59,13 +59,13 @@ public abstract class AbstractSiteExporter {
 
     public void export() throws IOException {
         File epubOutputFile = new File(getConfigValue("epubOutputFile"));
-        ISite site = newSite(fPropertyProvider);
+        Site site = newSite(fPropertyProvider);
         RemoteBookVisitor visitor = new RemoteBookVisitor(site);
         EPubGenerator generator = new EPubGenerator(epubOutputFile);
         visitor.visitBook(new PrintBookListener(generator) {
             @Override
             protected void println(String msg) {
-                AbstractSiteExporter.this.println(msg);
+                SiteExporter.this.println(msg);
             }
         });
         if (epubOutputFile.exists()) {
@@ -86,8 +86,10 @@ public abstract class AbstractSiteExporter {
         return StringUtil.resolvePropertyByKey(key, fPropertyProvider);
     }
 
-    protected abstract ISite newSite(IVariableProvider propertyProvider)
-        throws IOException;
+    protected Site newSite(IVariableProvider propertyProvider)
+        throws IOException {
+        return new Site(propertyProvider);
+    }
 
     protected void println(String msg) {
         System.out.println(msg);

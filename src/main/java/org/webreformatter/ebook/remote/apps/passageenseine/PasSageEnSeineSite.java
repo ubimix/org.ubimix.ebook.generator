@@ -5,13 +5,11 @@ import java.util.Arrays;
 
 import org.webreformatter.commons.strings.StringUtil.IVariableProvider;
 import org.webreformatter.commons.uri.Uri;
-import org.webreformatter.ebook.remote.AbstractConfiguredSite;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.ebook.remote.presenter.IPresenter;
 import org.webreformatter.ebook.remote.presenter.IndexPagePresenter.IIndexPageScrapper;
 import org.webreformatter.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.webreformatter.ebook.remote.presenter.RemotePagePresenter;
-import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
-import org.webreformatter.ebook.remote.scrappers.CirclesUrlProvider;
 import org.webreformatter.ebook.remote.scrappers.IScrapper;
 import org.webreformatter.ebook.remote.scrappers.IScrapperFactory;
 import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
@@ -19,7 +17,7 @@ import org.webreformatter.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
 /**
  * @author kotelnikov
  */
-public class PasSageEnSeineSite extends AbstractConfiguredSite {
+public class PasSageEnSeineSite extends Site {
 
     /**
      * @author kotelnikov
@@ -71,21 +69,27 @@ public class PasSageEnSeineSite extends AbstractConfiguredSite {
     public PasSageEnSeineSite(IVariableProvider propertyProvider)
         throws IOException {
         super(propertyProvider);
-    }
-
-    @Override
-    protected IScrapperFactory newScrapperFactory() {
-        return new PasSageEnSeineScrapperFactory();
-    }
-
-    @Override
-    protected IUrlProvider newUrlProvider() {
-        return new CirclesUrlProvider(
+        addSiteUrlPrefixes(
             Arrays.<String> asList(BeebappPageScrapper.BASE_URL),
             Arrays.<String> asList(
                 OwniPageScrapper.BASE_URL,
                 LeMondeScrapper.BASE_URL,
                 StandlogScrapper.BASE_URL));
+    }
+
+    @Override
+    public Uri getRemoteResourceUrl(Uri resourceUri) {
+        if (isInFirstCercle(resourceUri)) {
+            Uri.Builder builder = resourceUri.getBuilder();
+            builder.addParam("basicauth", "1");
+            resourceUri = builder.build();
+        }
+        return resourceUri;
+    }
+
+    @Override
+    protected IScrapperFactory newScrapperFactory() {
+        return new PasSageEnSeineScrapperFactory();
     }
 
 }

@@ -11,10 +11,9 @@ import java.util.logging.Logger;
 
 import org.webreformatter.commons.uri.Uri;
 import org.webreformatter.commons.xml.XmlException;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader;
-import org.webreformatter.ebook.remote.IRemoteResourceLoader.RemoteResource;
-import org.webreformatter.ebook.remote.ISite;
-import org.webreformatter.ebook.remote.presenter.RemotePagePresenter.IUrlProvider;
+import org.webreformatter.ebook.remote.RemoteResourceLoader;
+import org.webreformatter.ebook.remote.RemoteResourceLoader.RemoteResource;
+import org.webreformatter.ebook.remote.Site;
 import org.webreformatter.scrapper.protocol.HttpStatusCode;
 
 /**
@@ -29,19 +28,10 @@ public class PresenterManager implements IPresenterManager {
 
     private List<Uri> fPresentersUrls = new ArrayList<Uri>();
 
-    protected Uri fResourceBaseUrl;
+    private Site fSite;
 
-    private ISite fSite;
-
-    private IUrlProvider fUrlProvider;
-
-    public PresenterManager(
-        ISite site,
-        IUrlProvider urlProvider,
-        Uri localResources) throws IOException {
+    public PresenterManager(Site site) throws IOException {
         fSite = site;
-        fUrlProvider = urlProvider;
-        fResourceBaseUrl = localResources;
     }
 
     private void addPresenter(Uri resourceUri, IPresenter presenter) {
@@ -59,13 +49,15 @@ public class PresenterManager implements IPresenterManager {
         resourceUri = RemoteResourcePresenter.removeFragment(resourceUri);
         IPresenter presenter = getResourcePresenter(resourceUri);
         if (presenter == null && create) {
-            IRemoteResourceLoader resourceLoader = fSite.getResourceLoader();
+            RemoteResourceLoader resourceLoader = fSite.getResourceLoader();
+            Uri downloadUri = fSite.getRemoteResourceUrl(resourceUri);
             RemoteResource resource = resourceLoader.getResource(
-                resourceUri,
+                downloadUri,
                 true);
-            HttpStatusCode status = resource.download(shouldReload());
+            HttpStatusCode status = resource.download(fSite
+                .forceResourceDownload(downloadUri));
             if (status.isOkOrNotModified()) {
-                presenter = newPresenter(resource);
+                presenter = newPresenter(resourceUri, resource);
                 addPresenter(resourceUri, presenter);
             } else {
                 log.log(Level.FINE, "Resource was not loaded. URL: '"
@@ -116,49 +108,38 @@ public class PresenterManager implements IPresenterManager {
 
     private boolean isResourceUrl(Uri resourceUri) {
         String str = resourceUri.toString();
-        if (str.startsWith(fResourceBaseUrl.toString())) {
+        Uri localResourceBaseUrl = fSite.getLocalResourceBaseUrl();
+        if (str.startsWith(localResourceBaseUrl.toString())) {
             return true;
         }
         return false;
     }
 
-    protected IPresenter newPresenter(RemoteResource resource)
+    protected IPresenter newPresenter(Uri resourceUri, RemoteResource resource)
         throws IOException,
         XmlException {
-        Uri resourceUri = resource.getUri();
-
         // FIXME: remove this message
         System.out.println("Download '" + resourceUri + "'.");
 
         IPresenter presenter;
         if (isResourceUrl(resourceUri)) {
-            presenter = new LocalResourcePresenter(
-                fSite,
-                resource,
-                fResourceBaseUrl);
+            presenter = new LocalResourcePresenter(fSite, resource, resourceUri);
         } else if (resource.isHtmlPage()) {
             Uri siteUrl = fSite.getSiteUrl();
             if (siteUrl.equals(resourceUri)) {
-                presenter = new IndexPagePresenter(
-                    fSite,
-                    resource,
-                    fUrlProvider);
+                presenter = new IndexPagePresenter(fSite, resource, resourceUri);
             } else {
-                presenter = new InnerPagePresenter(
-                    fSite,
-                    resource,
-                    fUrlProvider);
+                presenter = new InnerPagePresenter(fSite, resource, resourceUri);
             }
         } else if (resource.isImage()) {
-            presenter = new ImagePresenter(fSite, resource);
+            presenter = new ImagePresenter(fSite, resource, resourceUri);
         } else {
-            presenter = new BinaryResourcePresenter(fSite, resource);
+            presenter = new BinaryResourcePresenter(
+                fSite,
+                resource,
+                resourceUri);
         }
         return presenter;
-    }
-
-    protected boolean shouldReload() {
-        return false;
     }
 
 }

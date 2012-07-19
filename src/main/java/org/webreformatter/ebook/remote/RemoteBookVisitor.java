@@ -31,11 +31,11 @@ public class RemoteBookVisitor extends Base implements IBookVisitor {
 
     private int fOrderCounter = 0;
 
-    private ISite fSite;
+    private Site fSite;
 
     private Map<Uri, Integer> fVisitOrder = new HashMap<Uri, Integer>();
 
-    public RemoteBookVisitor(ISite site) throws IOException {
+    public RemoteBookVisitor(Site site) throws IOException {
         super();
         fSite = site;
     }
@@ -93,7 +93,7 @@ public class RemoteBookVisitor extends Base implements IBookVisitor {
     }
 
     @Override
-    protected ISite getSite() {
+    protected Site getSite() {
         return fSite;
     }
 
