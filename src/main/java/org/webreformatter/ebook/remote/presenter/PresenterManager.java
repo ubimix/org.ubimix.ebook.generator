@@ -72,6 +72,11 @@ public class PresenterManager implements IPresenterManager {
                     + resourceUri
                     + "'. Status: "
                     + status);
+                throw new IllegalStateException(
+                    "Resource was not loaded. URL: '"
+                        + resourceUri
+                        + "'. Status: "
+                        + status);
             }
         }
         return presenter;
