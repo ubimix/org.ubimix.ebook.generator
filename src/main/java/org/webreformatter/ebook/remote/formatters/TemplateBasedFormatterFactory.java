@@ -25,6 +25,7 @@ import org.webreformatter.commons.xml.XmlException;
 import org.webreformatter.ebook.bom.IBookToc.IBookTocItem;
 import org.webreformatter.ebook.bom.json.JsonBookSection;
 import org.webreformatter.ebook.bom.json.JsonBookToc;
+import org.webreformatter.ebook.bom.json.JsonBookToc.JsonBookTocItem;
 import org.webreformatter.ebook.io.IOutput;
 import org.webreformatter.ebook.io.server.OutputToStream;
 import org.webreformatter.ebook.remote.Site;
@@ -54,6 +55,30 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
 
         public String esc(String str) {
             return PageUtils.escapeXml(str);
+        }
+
+        private List<IBookTocItem> findTocPosition(
+            List<IBookTocItem> tocItems,
+            int[] pos) {
+            List<IBookTocItem> result = tocItems;
+            if (tocItems != null) {
+                Uri url = fPresenter.getResourceUrl();
+                if (url != null) {
+                    for (int i = 0; pos[0] < 0 && i < tocItems.size(); i++) {
+                        JsonBookTocItem item = (JsonBookTocItem) tocItems
+                            .get(i);
+                        Uri itemUri = RemotePagePresenter.getFullUrl(item);
+                        result = tocItems;
+                        if (url.equals(itemUri)) {
+                            pos[0] = i;
+                            result = tocItems;
+                        } else {
+                            result = findTocPosition(item.getChildren(), pos);
+                        }
+                    }
+                }
+            }
+            return result;
         }
 
         public String formatDate(
@@ -111,6 +136,22 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             return fIndexPresenter;
         }
 
+        /**
+         * @return the next TOC item at the same level
+         * @throws IOException
+         * @throws XmlException
+         */
+        public IBookTocItem getNextTocItem() throws XmlException, IOException {
+            IndexPagePresenter indexPresenter = getIndexPresenter();
+            JsonBookToc toc = indexPresenter.getBookToc();
+            int[] pos = { -1 };
+            List<IBookTocItem> items = findTocPosition(toc.getTocItems(), pos);
+            IBookTocItem result = (pos[0] >= 0 && pos[0] < items.size() - 1)
+                ? items.get(pos[0] + 1)
+                : null;
+            return result;
+        }
+
         protected IPresenter getPresenter(Uri uri, boolean create)
             throws IOException,
             XmlException {
@@ -119,6 +160,23 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
                 .getPresenterManager()
                 .getPresenter(uri, create);
             return presenter;
+        }
+
+        /**
+         * @return the next TOC item at the same level
+         * @throws IOException
+         * @throws XmlException
+         */
+        public IBookTocItem getPreviousTocItem()
+            throws XmlException,
+            IOException {
+            IndexPagePresenter indexPresenter = getIndexPresenter();
+            JsonBookToc toc = indexPresenter.getBookToc();
+            int[] pos = { -1 };
+            List<IBookTocItem> items = findTocPosition(toc.getTocItems(), pos);
+            IBookTocItem result = (pos[0] > 0 && pos[0] < items.size()) ? items
+                .get(pos[0] - 1) : null;
+            return result;
         }
 
         public String getProperty(String key) throws XmlException, IOException {
