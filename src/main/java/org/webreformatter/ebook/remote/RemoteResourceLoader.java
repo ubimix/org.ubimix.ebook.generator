@@ -24,6 +24,7 @@ import org.webreformatter.resources.IWrfRepository;
 import org.webreformatter.resources.IWrfResource;
 import org.webreformatter.resources.IWrfResourceProvider;
 import org.webreformatter.resources.adapters.cache.CachedResourceAdapter;
+import org.webreformatter.resources.adapters.cache.DateUtil;
 import org.webreformatter.resources.adapters.html.HTMLAdapter;
 import org.webreformatter.resources.adapters.mime.MimeTypeAdapter;
 import org.webreformatter.resources.impl.WrfResourceRepository;
@@ -334,6 +335,11 @@ public class RemoteResourceLoader extends AbstractConfig {
         IWrfRepository repository = WrfResourceRepository.newRepository(
             new File(repositoryPath),
             reset);
+        long expirationTimeout = getConfigLong(
+            "downloadExpirationTimeout",
+            DateUtil.MIN * 1);
+        CachedResourceAdapter.setRefreshTimeout(expirationTimeout);
+        CachedResourceAdapter.setExpirationTimeout(expirationTimeout);
         return repository;
 
     }
