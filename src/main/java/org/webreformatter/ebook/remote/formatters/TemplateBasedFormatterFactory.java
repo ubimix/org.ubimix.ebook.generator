@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,28 +58,63 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             return PageUtils.escapeXml(str);
         }
 
-        private List<IBookTocItem> findTocPosition(
+        private void findTocAbsolutePosition(
             List<IBookTocItem> tocItems,
-            int[] pos) {
-            List<IBookTocItem> result = tocItems;
+            int[] pos,
+            List<IBookTocItem> result) {
             if (tocItems != null) {
                 Uri url = fPresenter.getResourceUrl();
                 if (url != null) {
+                    for (int i = 0; i < tocItems.size(); i++) {
+                        JsonBookTocItem item = (JsonBookTocItem) tocItems
+                            .get(i);
+                        Uri itemUri = RemotePagePresenter.getFullUrl(item);
+                        if (itemUri != null) {
+                            result.add(item);
+                            if (pos[0] < 0) {
+                                if (url.equals(itemUri)) {
+                                    pos[0] = -(pos[0] + 1);
+                                } else {
+                                    pos[0]--;
+                                }
+                            }
+                        }
+                        findTocAbsolutePosition(item.getChildren(), pos, result);
+                    }
+                }
+            }
+        }
+
+        private void findTocPosition(
+            List<IBookTocItem> tocItems,
+            int[] pos,
+            List<IBookTocItem> result) {
+            if (tocItems != null) {
+                Uri url = fPresenter.getResourceUrl();
+                if (url != null) {
+                    boolean found = false;
                     for (int i = 0; pos[0] < 0 && i < tocItems.size(); i++) {
                         JsonBookTocItem item = (JsonBookTocItem) tocItems
                             .get(i);
                         Uri itemUri = RemotePagePresenter.getFullUrl(item);
-                        result = tocItems;
                         if (url.equals(itemUri)) {
                             pos[0] = i;
-                            result = tocItems;
+                            found = true;
                         } else {
-                            result = findTocPosition(item.getChildren(), pos);
+                            findTocPosition(item.getChildren(), pos, result);
+                        }
+                    }
+                    if (found) {
+                        for (IBookTocItem item : tocItems) {
+                            Uri itemUri = RemotePagePresenter
+                                .getFullUrl((JsonBookTocItem) item);
+                            if (itemUri != null) {
+                                result.add(item);
+                            }
                         }
                     }
                 }
             }
-            return result;
         }
 
         public String formatDate(
@@ -136,16 +172,31 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             return fIndexPresenter;
         }
 
+        public IBookTocItem getNextTocItem() throws XmlException, IOException {
+            return getNextTocItem(true);
+        }
+
         /**
+         * @param flat if this flag is <code>true</code> then this method
+         *        considers that all pages are on the same level (without
+         *        hierarchy); otherwise it returns the next page on the same
+         *        level of the TOC
          * @return the next TOC item at the same level
          * @throws IOException
          * @throws XmlException
          */
-        public IBookTocItem getNextTocItem() throws XmlException, IOException {
+        public IBookTocItem getNextTocItem(boolean flat)
+            throws XmlException,
+            IOException {
             IndexPagePresenter indexPresenter = getIndexPresenter();
             JsonBookToc toc = indexPresenter.getBookToc();
             int[] pos = { -1 };
-            List<IBookTocItem> items = findTocPosition(toc.getTocItems(), pos);
+            List<IBookTocItem> items = new ArrayList<IBookTocItem>();
+            if (flat) {
+                findTocAbsolutePosition(toc.getTocItems(), pos, items);
+            } else {
+                findTocPosition(toc.getTocItems(), pos, items);
+            }
             IBookTocItem result = (pos[0] >= 0 && pos[0] < items.size() - 1)
                 ? items.get(pos[0] + 1)
                 : null;
@@ -162,18 +213,33 @@ public class TemplateBasedFormatterFactory implements IFormatterFactory {
             return presenter;
         }
 
+        public IBookTocItem getPreviousTocItem()
+            throws XmlException,
+            IOException {
+            return getPreviousTocItem(true);
+        }
+
         /**
+         * @param flat if this flag is <code>true</code> then this method
+         *        considers that all pages are on the same level (without
+         *        hierarchy); otherwise it returns the previous page on the same
+         *        level of the TOC
          * @return the next TOC item at the same level
          * @throws IOException
          * @throws XmlException
          */
-        public IBookTocItem getPreviousTocItem()
+        public IBookTocItem getPreviousTocItem(boolean flat)
             throws XmlException,
             IOException {
             IndexPagePresenter indexPresenter = getIndexPresenter();
             JsonBookToc toc = indexPresenter.getBookToc();
             int[] pos = { -1 };
-            List<IBookTocItem> items = findTocPosition(toc.getTocItems(), pos);
+            List<IBookTocItem> items = new ArrayList<IBookTocItem>();
+            if (flat) {
+                findTocAbsolutePosition(toc.getTocItems(), pos, items);
+            } else {
+                findTocPosition(toc.getTocItems(), pos, items);
+            }
             IBookTocItem result = (pos[0] > 0 && pos[0] < items.size()) ? items
                 .get(pos[0] - 1) : null;
             return result;
