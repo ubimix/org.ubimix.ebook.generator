@@ -3,18 +3,15 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.webreformatter.commons</groupId>
-        <artifactId>org.webreformatter.commons.poms</artifactId>
-        <version>1.2.0</version>
+        <groupId>org.ubimix.poms</groupId>
+        <artifactId>org.ubimix.poms.bundle</artifactId>
+        <version>1.2.1</version>
     </parent>
-    <groupId>org.webreformatter.ebook</groupId>
-    <artifactId>org.webreformatter.ebook.generator</artifactId>
-    <version>1.2.0</version>
+    <groupId>org.ubimix.ebook</groupId>
+    <artifactId>org.ubimix.ebook.generator</artifactId>
+    <version>1.2.1</version>
     <packaging>bundle</packaging>
-    <name>${artifactId}</name>
-    <properties>
-        <commons.version>1.1.5</commons.version>
-    </properties>
+    <name>${project.artifactId}</name>
     <profiles>
         <profile>
             <id>cli</id>
@@ -67,7 +64,7 @@
                                     <outputDirectory>target/cli</outputDirectory>
                                     <resources>
                                         <resource>
-                                            <directory>../../workdir</directory>
+                                            <directory>../org.ubimix.ebook/workdir</directory>
                                             <includes>
                                                 <include>config/**</include>
                                                 <include>templates/**</include>
@@ -124,77 +121,69 @@
     </profiles>
     <dependencies>
         <dependency>
-            <groupId>org.webreformatter.scrapper</groupId>
-            <artifactId>org.webreformatter.scrapper.app</artifactId>
-            <version>0.9.0</version>
+            <groupId>org.ubimix.scrapper</groupId>
+            <artifactId>org.ubimix.scrapper.app</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.templates</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.templates.api</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.templates.velocity</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.templates.velocity</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.ebook</groupId>
-            <artifactId>org.webreformatter.ebook</artifactId>
-            <version>1.2.0</version>
+            <groupId>org.ubimix.ebook</groupId>
+            <artifactId>org.ubimix.ebook.api</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.adapters</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.adapters</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.events</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.events</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.xml</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.xml</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.json</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.json</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.uri</artifactId>
-            <version>${commons.version}</version>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.uri</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.iterator</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.iterator</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.utils</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.utils</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.strings</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.strings</artifactId>
+            <version>1.2.1</version>
         </dependency>
         <dependency>
-            <groupId>org.webreformatter.commons</groupId>
-            <artifactId>org.webreformatter.commons.osgi</artifactId>
-            <version>${commons.version}</version>
-            <scope>provided</scope>
+            <groupId>org.ubimix.commons</groupId>
+            <artifactId>org.ubimix.commons.osgi</artifactId>
+            <version>1.2.1</version>
         </dependency>
 
         <dependency>
