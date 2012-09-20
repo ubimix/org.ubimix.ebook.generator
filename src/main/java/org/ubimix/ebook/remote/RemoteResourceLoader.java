@@ -28,14 +28,14 @@ import org.ubimix.resources.adapters.cache.DateUtil;
 import org.ubimix.resources.adapters.html.HTMLAdapter;
 import org.ubimix.resources.adapters.mime.MimeTypeAdapter;
 import org.ubimix.resources.impl.WrfResourceRepository;
-import org.ubimix.scrapper.app.AbstractConfig;
-import org.ubimix.scrapper.core.AccessConfig;
-import org.ubimix.scrapper.core.IAccessConfig.ICredentials;
-import org.ubimix.scrapper.protocol.AccessManager;
-import org.ubimix.scrapper.protocol.AccessManager.CredentialInfo;
-import org.ubimix.scrapper.protocol.CompositeProtocolHandler;
-import org.ubimix.scrapper.protocol.HttpStatusCode;
-import org.ubimix.scrapper.protocol.ProtocolHandlerUtils;
+import org.ubimix.scraper.app.AbstractConfig;
+import org.ubimix.scraper.core.AccessConfig;
+import org.ubimix.scraper.core.IAccessConfig.ICredentials;
+import org.ubimix.scraper.protocol.AccessManager;
+import org.ubimix.scraper.protocol.AccessManager.CredentialInfo;
+import org.ubimix.scraper.protocol.CompositeProtocolHandler;
+import org.ubimix.scraper.protocol.HttpStatusCode;
+import org.ubimix.scraper.protocol.ProtocolHandlerUtils;
 
 /**
  * @author kotelnikov

@@ -14,7 +14,7 @@ import org.ubimix.commons.xml.XmlException;
 import org.ubimix.ebook.remote.RemoteResourceLoader;
 import org.ubimix.ebook.remote.RemoteResourceLoader.RemoteResource;
 import org.ubimix.ebook.remote.Site;
-import org.ubimix.scrapper.protocol.HttpStatusCode;
+import org.ubimix.scraper.protocol.HttpStatusCode;
 
 /**
  * @author kotelnikov

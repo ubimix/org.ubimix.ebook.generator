@@ -9,11 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.Entity;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Text;
 import org.ubimix.commons.json.JsonObject;
 import org.ubimix.commons.uri.Uri;
 import org.ubimix.commons.xml.XHTMLUtils;
@@ -28,8 +23,13 @@ import org.ubimix.ebook.remote.RemoteResourceLoader.RemoteResource;
 import org.ubimix.ebook.remote.Site;
 import org.ubimix.ebook.remote.formatters.IFormatter;
 import org.ubimix.ebook.remote.scrappers.IScrapper;
-import org.ubimix.scrapper.utils.HtmlPropertiesExtractor.IPropertyListener;
-import org.ubimix.scrapper.utils.HtmlTablePropertiesExtractor;
+import org.ubimix.scraper.utils.HtmlPropertiesExtractor.IPropertyListener;
+import org.ubimix.scraper.utils.HtmlTablePropertiesExtractor;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+import org.w3c.dom.Entity;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Text;
 
 /**
  * @author kotelnikov
