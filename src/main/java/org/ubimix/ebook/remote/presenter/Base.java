@@ -10,7 +10,7 @@ import org.ubimix.commons.uri.Uri;
 import org.ubimix.commons.xml.XmlException;
 import org.ubimix.ebook.remote.Site;
 import org.ubimix.ebook.remote.formatters.IFormatter;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
 
 /**
  * @author kotelnikov
@@ -50,7 +50,7 @@ public abstract class Base {
     protected <S extends IScrapper> S newScrapper(
         IPresenter presenter,
         Class<S> type) throws IOException, XmlException {
-        S result = getSite().getScrapperFactory().getScrapper(presenter, type);
+        S result = getSite().getScraperFactory().getScrapper(presenter, type);
         return result;
     }
 }

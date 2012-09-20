@@ -14,8 +14,8 @@ import org.ubimix.commons.xml.XmlException;
 import org.ubimix.ebook.remote.Site;
 import org.ubimix.ebook.remote.SiteExporter;
 import org.ubimix.ebook.remote.RemoteResourceLoader;
-import org.ubimix.ebook.remote.scrappers.IScrapperFactory;
-import org.ubimix.ebook.remote.scrappers.xwiki.XWikiScrapperFactory;
+import org.ubimix.ebook.remote.scrapers.IScraperFactory;
+import org.ubimix.ebook.remote.scrapers.xwiki.XWikiScraperFactory;
 
 /**
  * @author kotelnikov
@@ -69,8 +69,8 @@ public class XwikiEpubExporter extends SiteExporter {
         }
 
         @Override
-        protected IScrapperFactory newScrapperFactory() {
-            return new XWikiScrapperFactory();
+        protected IScraperFactory newScraperFactory() {
+            return new XWikiScraperFactory();
         }
 
     }

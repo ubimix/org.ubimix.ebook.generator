@@ -22,7 +22,7 @@ import org.ubimix.ebook.bom.json.JsonBookSection;
 import org.ubimix.ebook.remote.RemoteResourceLoader.RemoteResource;
 import org.ubimix.ebook.remote.Site;
 import org.ubimix.ebook.remote.formatters.IFormatter;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
 import org.ubimix.scraper.utils.HtmlPropertiesExtractor.IPropertyListener;
 import org.ubimix.scraper.utils.HtmlTablePropertiesExtractor;
 import org.w3c.dom.Attr;

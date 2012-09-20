@@ -7,13 +7,13 @@ import java.io.IOException;
 
 import org.ubimix.commons.xml.XmlException;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
-import org.ubimix.ebook.remote.scrappers.GenericPageScrapper;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.GenericPageScraper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
 
 /**
  * @author kotelnikov
  */
-public class LeMondeScrapper extends GenericPageScrapper implements IScrapper {
+public class LeMondeScrapper extends GenericPageScraper implements IScrapper {
 
     public static final String BASE_URL = "http://www.lemonde.fr/";
 

@@ -27,9 +27,9 @@ import org.ubimix.ebook.remote.formatters.IFormatterFactory;
 import org.ubimix.ebook.remote.formatters.TemplateBasedFormatterFactory;
 import org.ubimix.ebook.remote.presenter.IPresenterManager;
 import org.ubimix.ebook.remote.presenter.PresenterManager;
-import org.ubimix.ebook.remote.scrappers.IScrapperFactory;
-import org.ubimix.ebook.remote.scrappers.xwiki.XWikiScrapperFactory;
-import org.ubimix.scrapper.app.AbstractConfig;
+import org.ubimix.ebook.remote.scrapers.IScraperFactory;
+import org.ubimix.ebook.remote.scrapers.xwiki.XWikiScraperFactory;
+import org.ubimix.scraper.app.AbstractConfig;
 
 /**
  * @author kotelnikov
@@ -69,7 +69,7 @@ public class Site extends AbstractConfig {
 
     private File fResources;
 
-    private IScrapperFactory fScrapperFactory;
+    private IScraperFactory fScraperFactory;
 
     private List<String> fSecondCircleUrlPrefixes = new ArrayList<String>();
 
@@ -182,11 +182,11 @@ public class Site extends AbstractConfig {
         return result;
     }
 
-    public IScrapperFactory getScrapperFactory() throws IOException {
-        if (fScrapperFactory == null) {
-            fScrapperFactory = newScrapperFactory();
+    public IScraperFactory getScraperFactory() throws IOException {
+        if (fScraperFactory == null) {
+            fScraperFactory = newScraperFactory();
         }
-        return fScrapperFactory;
+        return fScraperFactory;
     }
 
     public Uri getSiteUrl() {
@@ -228,8 +228,8 @@ public class Site extends AbstractConfig {
         return new RemoteResourceLoader(fPropertyProvider);
     }
 
-    protected IScrapperFactory newScrapperFactory() {
-        return new XWikiScrapperFactory();
+    protected IScraperFactory newScraperFactory() {
+        return new XWikiScraperFactory();
     }
 
 }

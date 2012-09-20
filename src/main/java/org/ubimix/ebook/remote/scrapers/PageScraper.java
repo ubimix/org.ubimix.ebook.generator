@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.ubimix.ebook.remote.scrappers;
+package org.ubimix.ebook.remote.scrapers;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -17,11 +17,11 @@ import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
 /**
  * @author kotelnikov
  */
-public abstract class PageScrapper implements IScrapper {
+public abstract class PageScraper implements IScrapper {
 
     protected RemotePagePresenter fPresenter;
 
-    public PageScrapper(RemotePagePresenter presenter) {
+    public PageScraper(RemotePagePresenter presenter) {
         fPresenter = presenter;
     }
 

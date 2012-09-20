@@ -10,9 +10,9 @@ import org.ubimix.ebook.remote.presenter.IPresenter;
 import org.ubimix.ebook.remote.presenter.IndexPagePresenter.IIndexPageScrapper;
 import org.ubimix.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
-import org.ubimix.ebook.remote.scrappers.IScrapperFactory;
-import org.ubimix.ebook.remote.scrappers.xwiki.XWikiIndexPageScrapper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.IScraperFactory;
+import org.ubimix.ebook.remote.scrapers.xwiki.XWikiIndexPageScrapper;
 
 /**
  * @author kotelnikov
@@ -24,7 +24,7 @@ public class PasSageEnSeineSite extends Site {
      */
     public static class PasSageEnSeineScrapperFactory
         implements
-        IScrapperFactory {
+        IScraperFactory {
 
         public PasSageEnSeineScrapperFactory() {
         }
@@ -88,7 +88,7 @@ public class PasSageEnSeineSite extends Site {
     }
 
     @Override
-    protected IScrapperFactory newScrapperFactory() {
+    protected IScraperFactory newScraperFactory() {
         return new PasSageEnSeineScrapperFactory();
     }
 

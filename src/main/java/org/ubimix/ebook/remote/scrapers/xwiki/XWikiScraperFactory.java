@@ -1,4 +1,4 @@
-package org.ubimix.ebook.remote.scrappers.xwiki;
+package org.ubimix.ebook.remote.scrapers.xwiki;
 
 import org.ubimix.commons.uri.Uri;
 import org.ubimix.ebook.remote.presenter.IPresenter;
@@ -6,17 +6,17 @@ import org.ubimix.ebook.remote.presenter.IndexPagePresenter.IIndexPageScrapper;
 import org.ubimix.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
 import org.ubimix.ebook.remote.presenter.RemoteResourcePresenter;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
-import org.ubimix.ebook.remote.scrappers.IScrapperFactory;
-import org.ubimix.ebook.remote.scrappers.mediawiki.MobileWikipediaPageScrapper;
-import org.ubimix.ebook.remote.scrappers.mediawiki.WikipediaPageScrapper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.IScraperFactory;
+import org.ubimix.ebook.remote.scrapers.mediawiki.MobileWikipediaPageScrapper;
+import org.ubimix.ebook.remote.scrapers.mediawiki.WikipediaPageScrapper;
 
 /**
  * @author kotelnikov
  */
-public class XWikiScrapperFactory implements IScrapperFactory {
+public class XWikiScraperFactory implements IScraperFactory {
 
-    public XWikiScrapperFactory() {
+    public XWikiScraperFactory() {
     }
 
     @SuppressWarnings("unchecked")

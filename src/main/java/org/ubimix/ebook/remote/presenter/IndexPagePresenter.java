@@ -22,7 +22,7 @@ import org.ubimix.ebook.bom.json.JsonBookToc;
 import org.ubimix.ebook.bom.json.JsonBookToc.JsonBookTocItem;
 import org.ubimix.ebook.remote.RemoteResourceLoader.RemoteResource;
 import org.ubimix.ebook.remote.Site;
-import org.ubimix.ebook.remote.scrappers.IScrapper;
+import org.ubimix.ebook.remote.scrapers.IScrapper;
 
 /**
  * @author kotelnikov

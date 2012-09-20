@@ -121,8 +121,8 @@
     </profiles>
     <dependencies>
         <dependency>
-            <groupId>org.ubimix.scrapper</groupId>
-            <artifactId>org.ubimix.scrapper.app</artifactId>
+            <groupId>org.ubimix.scraper</groupId>
+            <artifactId>org.ubimix.scraper.app</artifactId>
             <version>1.2.1</version>
         </dependency>
         <dependency>

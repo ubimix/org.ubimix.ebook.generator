@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.ubimix.ebook.remote.scrappers.mediawiki;
+package org.ubimix.ebook.remote.scrapers.mediawiki;
 
 import java.io.IOException;
 
@@ -9,12 +9,12 @@ import org.ubimix.commons.xml.XmlException;
 import org.ubimix.commons.xml.XmlWrapper;
 import org.ubimix.ebook.remote.presenter.InnerPagePresenter.IInnerPageScrapper;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
-import org.ubimix.ebook.remote.scrappers.PageScrapper;
+import org.ubimix.ebook.remote.scrapers.PageScraper;
 
 /**
  * @author kotelnikov
  */
-public class MobileWikipediaPageScrapper extends PageScrapper
+public class MobileWikipediaPageScrapper extends PageScraper
     implements
     IInnerPageScrapper {
 

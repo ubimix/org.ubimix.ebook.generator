@@ -1,4 +1,4 @@
-package org.ubimix.ebook.remote.scrappers;
+package org.ubimix.ebook.remote.scrapers;
 
 import java.io.IOException;
 
@@ -10,7 +10,7 @@ import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
 /**
  * @author kotelnikov
  */
-public class GenericPageScrapper extends PageScrapper
+public class GenericPageScraper extends PageScraper
     implements
     IInnerPageScrapper {
 
@@ -22,7 +22,7 @@ public class GenericPageScrapper extends PageScrapper
 
     protected String fTitleXPath;
 
-    public GenericPageScrapper(
+    public GenericPageScraper(
         RemotePagePresenter presenter,
         String contentXPath,
         String titleXPath) {

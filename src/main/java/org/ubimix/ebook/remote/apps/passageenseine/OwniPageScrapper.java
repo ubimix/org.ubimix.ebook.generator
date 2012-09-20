@@ -19,9 +19,9 @@ import org.ubimix.commons.xml.XmlWrapper;
 import org.ubimix.commons.xml.XmlWrapper.XmlContext;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
 import org.ubimix.ebook.remote.presenter.RemoteResourcePresenter;
-import org.ubimix.ebook.remote.scrappers.GenericPageScrapper;
+import org.ubimix.ebook.remote.scrapers.GenericPageScraper;
 
-public class OwniPageScrapper extends GenericPageScrapper {
+public class OwniPageScrapper extends GenericPageScraper {
 
     public static final String BASE_URL = "http://owni.fr/";
 

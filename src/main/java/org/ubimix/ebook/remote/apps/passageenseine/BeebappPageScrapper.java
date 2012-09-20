@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.ubimix.commons.xml.XmlException;
 import org.ubimix.ebook.remote.presenter.RemotePagePresenter;
-import org.ubimix.ebook.remote.scrappers.xwiki.XWikiInternalPageScrapper;
+import org.ubimix.ebook.remote.scrapers.xwiki.XWikiInternalPageScrapper;
 
 /**
  * @author kotelnikov
