@@ -49,6 +49,6 @@ Import-Package: javax.servlet;version="2.5.0",
  org.ubimix.server.encoding;version="1.2.1",
  org.ubimix.server.mime;version="1.2.1",
  org.w3c.dom
-undle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Bundle-Activator: org.ubimix.scraper.example.Activator
