@@ -192,7 +192,7 @@ public class InnerPagePresenter extends RemotePagePresenter
                 throws XmlException {
                 boolean ok = false;
                 XmlWrapper e = valueNode.getFirstElement();
-                if (e.getNext() == null) {
+                if (e != null && e.getNext() == null) {
                     String tagName = XHTMLUtils.getHTMLName(e.getRootElement());
                     String ref = null;
                     if ("img".equals(tagName)) {
