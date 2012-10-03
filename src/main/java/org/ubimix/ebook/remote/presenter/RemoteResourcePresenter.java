@@ -90,7 +90,7 @@ public abstract class RemoteResourcePresenter extends Base
 
     protected BookId getIdByUrl(Uri url) {
         String hash = getHash(url);
-        String ref = "uri:sha1:" + hash;
+        String ref = "id-" + hash;
         BookId result = new BookId(ref);
         return result;
     }

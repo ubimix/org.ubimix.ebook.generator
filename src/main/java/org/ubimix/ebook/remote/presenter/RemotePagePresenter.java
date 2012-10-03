@@ -99,7 +99,7 @@ public abstract class RemotePagePresenter extends RemoteResourcePresenter {
     }
 
     public String getResourcePathFolder() {
-        return "";
+        return "OPS/";
     }
 
     protected String localizeReference(Uri pagePath, String ref) {
