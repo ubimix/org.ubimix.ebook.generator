@@ -270,9 +270,15 @@ public class RemoteResourceLoader extends AbstractConfig {
     }
 
     protected void initCredentials() throws IOException {
-        String accessConfigFileName = getConfigString(
-            "accessConfig",
-            "./config/access.json");
+
+        // String accessConfigFileName = getConfigString(
+        // "accessConfig",
+        // "./config/access.json");
+        
+        //no default value for accessConfig, otherwise the default
+        //resource is looked for while it may explicitely be unset
+        String accessConfigFileName = getConfigString("accessConfig");
+        
         if (accessConfigFileName != null) {
             File configFile = new File(accessConfigFileName);
             String serializedConfig = IOUtil.readString(configFile);

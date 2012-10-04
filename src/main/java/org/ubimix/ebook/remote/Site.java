@@ -67,7 +67,7 @@ public class Site extends AbstractConfig {
 
     private RemoteResourceLoader fResourceLoader;
 
-    private File fResources;
+    protected File fResources;
 
     private IScraperFactory fScraperFactory;
 
@@ -75,7 +75,11 @@ public class Site extends AbstractConfig {
 
     private Uri fSiteUrl;
 
-    private ITemplateProcessor fTemplateProcessor;
+    protected ITemplateProcessor fTemplateProcessor;
+    
+    public Site() {
+    	super();
+    }
 
     public Site(IVariableProvider propertyProvider) throws IOException {
         super(propertyProvider);

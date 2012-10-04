@@ -56,6 +56,20 @@ public class SiteExporter {
             }
         };
     }
+    
+
+    public SiteExporter(final Map<String, String> configMap) throws IOException {
+        fPropertyProvider = new IVariableProvider() {
+            @Override
+            public String getValue(String name) {
+                String value = System.getProperty(name);
+                if (value == null) {
+                    value = configMap.get(name);
+                }
+                return value;
+            }
+        };
+    }
 
     public void export() throws IOException {
         File epubOutputFile = new File(getConfigValue("epubOutputFile"));
@@ -82,7 +96,7 @@ public class SiteExporter {
         }
     }
 
-    protected String getConfigValue(String key) {
+    public String getConfigValue(String key) {
         return StringUtil.resolvePropertyByKey(key, fPropertyProvider);
     }
 
